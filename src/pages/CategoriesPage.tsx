@@ -1,9 +1,14 @@
 import { useCallback, useState } from "react";
 import { categoriesService } from "../api/services/categories.ts";
+import CategoryForm from "../components/categories/CategoryForm.tsx";
+import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
+import type { CreateCategoryRequest } from "../types/category.ts";
 
 function CategoriesPage() {
     const [includeInactive, setIncludeInactive] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const fetchCategories = useCallback(
         () => categoriesService.getAll(includeInactive),
@@ -12,9 +17,35 @@ function CategoriesPage() {
 
     const { data: categories, isLoading, error, reload } = useApi(fetchCategories);
 
+    function openCreate() {
+        setSuccessMessage(null);
+        setIsCreateOpen(true);
+    }
+
+    async function handleCreate(request: CreateCategoryRequest) {
+        const created = await categoriesService.create(request);
+        setIsCreateOpen(false);
+        setSuccessMessage(`Category "${created.name}" was added.`);
+        reload();
+    }
+
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+                <button
+                    onClick={openCreate}
+                    className="rounded-lg bg-[#6D28D9] px-4 py-2 text-white hover:bg-[#4C1D95]"
+                >
+                    Add category
+                </button>
+            </div>
+
+            {successMessage && (
+                <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                    {successMessage}
+                </div>
+            )}
 
             <label className="mt-4 flex items-center gap-2 text-sm text-gray-700">
                 <input
@@ -79,6 +110,16 @@ function CategoriesPage() {
                     </div>
                 )}
             </div>
+
+            {isCreateOpen && (
+                <Modal title="Add category">
+                    <CategoryForm
+                        submitLabel="Add category"
+                        onSubmit={handleCreate}
+                        onCancel={() => setIsCreateOpen(false)}
+                    />
+                </Modal>
+            )}
         </div>
     );
 }
