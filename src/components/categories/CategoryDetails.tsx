@@ -9,7 +9,10 @@ interface CategoryDetailsProps {
 }
 
 function formatDate(value: string): string {
-    return new Date(value).toLocaleString();
+    return new Date(value).toLocaleString("en-GB", {
+        dateStyle: "medium",
+        timeStyle: "short",
+    });
 }
 
 function CategoryDetails({ categoryId, onClose }: CategoryDetailsProps) {
