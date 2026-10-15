@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { categoriesService } from "../api/services/categories.ts";
+import CategoryDetails from "../components/categories/CategoryDetails.tsx";
 import CategoryForm from "../components/categories/CategoryForm.tsx";
 import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
@@ -9,6 +10,7 @@ function CategoriesPage() {
     const [includeInactive, setIncludeInactive] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [viewingId, setViewingId] = useState<number | null>(null);
 
     const fetchCategories = useCallback(
         () => categoriesService.getAll(includeInactive),
@@ -83,6 +85,7 @@ function CategoriesPage() {
                                     <th className="px-4 py-3">Name</th>
                                     <th className="px-4 py-3">Description</th>
                                     <th className="px-4 py-3">Status</th>
+                                    <th className="px-4 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,6 +106,14 @@ function CategoriesPage() {
                                                 {category.isActive ? "Active" : "Inactive"}
                                             </span>
                                         </td>
+                                        <td className="px-4 py-3">
+                                            <button
+                                                onClick={() => setViewingId(category.id)}
+                                                className="text-[#6D28D9] hover:underline"
+                                            >
+                                                View
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -119,6 +130,13 @@ function CategoriesPage() {
                         onCancel={() => setIsCreateOpen(false)}
                     />
                 </Modal>
+            )}
+
+            {viewingId !== null && (
+                <CategoryDetails
+                    categoryId={viewingId}
+                    onClose={() => setViewingId(null)}
+                />
             )}
         </div>
     );
