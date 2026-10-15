@@ -4,13 +4,14 @@ import CategoryDetails from "../components/categories/CategoryDetails.tsx";
 import CategoryForm from "../components/categories/CategoryForm.tsx";
 import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
-import type { CreateCategoryRequest } from "../types/category.ts";
+import type { Category, CategoryFormValues } from "../types/category.ts";
 
 function CategoriesPage() {
     const [includeInactive, setIncludeInactive] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [viewingId, setViewingId] = useState<number | null>(null);
+    const [editing, setEditing] = useState<Category | null>(null);
 
     const fetchCategories = useCallback(
         () => categoriesService.getAll(includeInactive),
@@ -24,10 +25,26 @@ function CategoriesPage() {
         setIsCreateOpen(true);
     }
 
-    async function handleCreate(request: CreateCategoryRequest) {
-        const created = await categoriesService.create(request);
+    function openEdit(category: Category) {
+        setSuccessMessage(null);
+        setEditing(category);
+    }
+
+    async function handleCreate(values: CategoryFormValues) {
+        const created = await categoriesService.create({
+            name: values.name,
+            description: values.description,
+        });
         setIsCreateOpen(false);
         setSuccessMessage(`Category "${created.name}" was added.`);
+        reload();
+    }
+
+    async function handleUpdate(values: CategoryFormValues) {
+        if (editing === null) return;
+        const updated = await categoriesService.update(editing.id, values);
+        setEditing(null);
+        setSuccessMessage(`Category "${updated.name}" was updated.`);
         reload();
     }
 
@@ -107,12 +124,20 @@ function CategoriesPage() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <button
-                                                onClick={() => setViewingId(category.id)}
-                                                className="text-[#6D28D9] hover:underline"
-                                            >
-                                                View
-                                            </button>
+                                            <div className="flex gap-4">
+                                                <button
+                                                    onClick={() => setViewingId(category.id)}
+                                                    className="text-[#6D28D9] hover:underline"
+                                                >
+                                                    View
+                                                </button>
+                                                <button
+                                                    onClick={() => openEdit(category)}
+                                                    className="text-[#6D28D9] hover:underline"
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -128,6 +153,20 @@ function CategoriesPage() {
                         submitLabel="Add category"
                         onSubmit={handleCreate}
                         onCancel={() => setIsCreateOpen(false)}
+                    />
+                </Modal>
+            )}
+
+            {editing !== null && (
+                <Modal title="Edit category">
+                    <CategoryForm
+                        initialName={editing.name}
+                        initialDescription={editing.description ?? ""}
+                        initialIsActive={editing.isActive}
+                        showActiveToggle
+                        submitLabel="Save changes"
+                        onSubmit={handleUpdate}
+                        onCancel={() => setEditing(null)}
                     />
                 </Modal>
             )}

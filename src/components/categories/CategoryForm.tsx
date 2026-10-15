@@ -1,13 +1,15 @@
 import { useState } from "react";
 import type { SyntheticEvent } from "react";
 import { ApiError } from "../../api/client.ts";
-import type { CreateCategoryRequest } from "../../types/category.ts";
+import type { CategoryFormValues } from "../../types/category.ts";
 
 interface CategoryFormProps {
     initialName?: string;
     initialDescription?: string;
+    initialIsActive?: boolean;
+    showActiveToggle?: boolean;
     submitLabel: string;
-    onSubmit: (request: CreateCategoryRequest) => Promise<void>;
+    onSubmit: (values: CategoryFormValues) => Promise<void>;
     onCancel: () => void;
 }
 
@@ -19,12 +21,15 @@ interface FieldErrors {
 function CategoryForm({
     initialName = "",
     initialDescription = "",
+    initialIsActive = true,
+    showActiveToggle = false,
     submitLabel,
     onSubmit,
     onCancel,
 }: CategoryFormProps) {
     const [name, setName] = useState(initialName);
     const [description, setDescription] = useState(initialDescription);
+    const [isActive, setIsActive] = useState(initialIsActive);
     const [isSaving, setIsSaving] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [serverErrors, setServerErrors] = useState<string[]>([]);
@@ -57,6 +62,7 @@ function CategoryForm({
             await onSubmit({
                 name: trimmedName,
                 description: trimmedDescription === "" ? null : trimmedDescription,
+                isActive,
             });
         } catch (err: unknown) {
             if (err instanceof ApiError && err.status === 409) {
@@ -118,6 +124,18 @@ function CategoryForm({
                     <p className="mt-1 text-sm text-red-600">{fieldErrors.description}</p>
                 )}
             </div>
+
+            {showActiveToggle && (
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                        disabled={isSaving}
+                    />
+                    Active
+                </label>
+            )}
 
             <div className="flex justify-end gap-2">
                 <button
