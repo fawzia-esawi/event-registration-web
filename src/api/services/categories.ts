@@ -1,5 +1,9 @@
 import { apiClient } from "../client.ts";
-import type { Category, CreateCategoryRequest } from "../../types/category.ts";
+import type {
+    Category,
+    CreateCategoryRequest,
+    UpdateCategoryRequest,
+} from "../../types/category.ts";
 
 export const categoriesService = {
     getAll: (includeInactive: boolean) =>
@@ -9,4 +13,7 @@ export const categoriesService = {
 
     create: (request: CreateCategoryRequest) =>
         apiClient.post<Category>("/categories", request),
+
+    update: (id: number, request: UpdateCategoryRequest) =>
+        apiClient.put<Category>(`/categories/${id}`, request),
 };

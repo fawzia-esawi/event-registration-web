@@ -11,3 +11,11 @@ export interface CreateCategoryRequest {
     name: string;
     description: string | null;
 }
+
+export interface CategoryFormValues {
+    name: string;
+    description: string | null;
+    isActive: boolean;
+}
+
+export type UpdateCategoryRequest = CategoryFormValues;
