@@ -16,4 +16,6 @@ export const categoriesService = {
 
     update: (id: number, request: UpdateCategoryRequest) =>
         apiClient.put<Category>(`/categories/${id}`, request),
+
+    remove: (id: number) => apiClient.delete<void>(`/categories/${id}`),
 };
