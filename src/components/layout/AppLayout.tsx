@@ -50,7 +50,7 @@ function AppLayout() {
             text-white ">
                 <Sidebar currentPath={path}></Sidebar>
             </div>
-            <main className="flex-1 bg-[#F5F3F7]">
+            <main className="flex-1 bg-[#FAFAFA]">
                 {renderPage()}
             </main>
         </div>
