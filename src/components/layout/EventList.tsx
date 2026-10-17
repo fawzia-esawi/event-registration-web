@@ -44,24 +44,33 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
         }
     }
 
+
     useEffect(() => {
-        setPage(1);
-    }, [filters]);
-    useEffect(() => {
-        setLoading(true);
-        setError(null);
-        getEvents(page,pageSize,filters)
+        let cancelled = false;
+
+        getEvents(page, pageSize, filters)
             .then((data) => {
+                if (cancelled) return;
+
                 setEvents(data.items);
-                setTotalPages(data.totalPages)
+                setTotalPages(data.totalPages);
+                setError(null);
             })
             .catch(() => {
+                if (cancelled) return;
+
                 setError("Failed to load events.");
             })
             .finally(() => {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             });
-    }, [page,filters,refreshKey]);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [page, filters, refreshKey]);
 
     if (loading) {
         return <p className="p-4 text-gray-500">Loading events...</p>;

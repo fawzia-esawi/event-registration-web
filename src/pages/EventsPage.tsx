@@ -58,6 +58,7 @@ function Events() {
                     <InputField
                         label="Search"
                         id="eventSearch"
+                        value={filters.search}
                         type="text"
                         placeholder="Search by event name or location..."
                         className="min-w-[220px] flex-[2]"
@@ -70,7 +71,7 @@ function Events() {
                     <SelectField
                         label="Category"
                         id="categoryFilter"
-                        defaultValue=""
+                        value={filters.categoryId}
                         className="min-w-[140px] flex-1"
                         onChange={(e) =>
                             updateFilter("categoryId", e.target.value)}                    >
@@ -81,7 +82,7 @@ function Events() {
                     <SelectField
                         label="Status"
                         id="activeFilter"
-                        defaultValue=""
+                        value={filters.isActive}
                         className="min-w-[140px] flex-1 "
                         onChange={(e) =>
                             updateFilter("isActive", e.target.value)}
@@ -96,6 +97,7 @@ function Events() {
                     <InputField
                         label="From Date"
                         id="fromDateFilter"
+                        value={filters.fromDate}
                         type="date"
                         className="min-w-[140px] flex-1" onChange={(e) =>
                         updateFilter("fromDate", e.target.value)}
@@ -105,6 +107,7 @@ function Events() {
                     <InputField
                         label="To Date"
                         id="toDateFilter"
+                        value={filters.toDate}
                         type="date"
                         className="min-w-[140px] flex-1"
                         onChange={(e) =>
@@ -123,7 +126,7 @@ function Events() {
             </div>
 
             <div className="h-[75%] mt-1 mb-1 bg-[#FAFAFA] border border-[#D8D8D8] rounded-lg p-4 shadow-sm">
-            <EventList filters={filters} refreshKey={refreshKey}    onEventUpdated={() => setRefreshKey((previous) => previous + 1)}
+            <EventList key={JSON.stringify(filters)} filters={filters} refreshKey={refreshKey}    onEventUpdated={() => setRefreshKey((previous) => previous + 1)}
             />
             </div>
         </div>
