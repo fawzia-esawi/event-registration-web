@@ -1,56 +1,65 @@
+import type { ApiErrorResponse } from "../types/common.ts";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
-export async function apiGet<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+export class ApiError extends Error {
+    status: number;
+    data: ApiErrorResponse | null;
 
-    if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+    constructor(status: number, message: string, data: ApiErrorResponse | null) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+        this.data = data;
+    }
+}
+
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+async function request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
+    const headers: Record<string, string> = {};
+    if (body !== undefined) {
+        headers["Content-Type"] = "application/json";
     }
 
-    return response.json() as Promise<T>;
-}
-export async function apiPost<TRequest, TResponse>(endpoint: string, payload: TRequest): Promise<TResponse> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-    }
-
-    return response.json() as Promise<TResponse>;
-}
-export async function apiPut<TRequest, TResponse>(endpoint: string, payload: TRequest): Promise<TResponse> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+    let response: Response;
+    try {
+        response = await fetch(`${BASE_URL}${path}`, {
+            method,
+            headers,
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+        });
+    } catch {
+        throw new ApiError(0, "Cannot reach the server. Please try again.", null);
     }
 
     if (response.status === 204) {
-        return undefined as TResponse;
+        return undefined as T;
     }
 
-    return response.json() as Promise<TResponse>;
-}
-
-export async function apiDelete(endpoint: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: "DELETE",
-    });
+    let data: unknown = null;
+    try {
+        data = await response.json();
+    } catch {
+        data = null;
+    }
 
     if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        const errorData = data as ApiErrorResponse | null;
+        throw new ApiError(
+            response.status,
+            errorData?.message ?? "Request failed.",
+            errorData,
+        );
     }
+
+    return data as T;
 }
+
+export const apiClient = {
+    get: <T>(path: string) => request<T>("GET", path),
+    post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+    put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
+    patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
+    delete: <T>(path: string) => request<T>("DELETE", path),
+};

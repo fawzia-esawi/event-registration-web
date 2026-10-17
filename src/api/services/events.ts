@@ -1,9 +1,13 @@
 
-import {apiDelete, apiGet, apiPost, apiPut} from "../client";
+import { apiClient } from "../client.ts";
 import {
-    type CreateEventPayload, type EventsResponse, type EventFormData, type CreateEventResponse, type EventDetails,
-    toIsoDate
-} from "../../types/event";
+    type CreateEventPayload,
+    type EventsResponse,
+    type EventFormData,
+    type CreateEventResponse,
+    type EventDetails,
+    toIsoDate,
+} from "../../types/event.ts";
 
 export type EventFilters = {
     search?: string;
@@ -13,9 +17,15 @@ export type EventFilters = {
     toDate?: string;
 };
 
-export function getEvents(page = 1, pageSize = 10, filters: EventFilters = {})
-{
-    const params = new URLSearchParams({page: String(page), pageSize: String(pageSize),});
+export function getEvents(
+    page = 1,
+    pageSize = 10,
+    filters: EventFilters = {},
+): Promise<EventsResponse> {
+    const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+    });
 
     if (filters.search?.trim()) {
         params.set("search", filters.search.trim());
@@ -37,32 +47,45 @@ export function getEvents(page = 1, pageSize = 10, filters: EventFilters = {})
         params.set("toDate", filters.toDate);
     }
 
-    return apiGet<EventsResponse>(`/Events?${params.toString()}`);
+    return apiClient.get<EventsResponse>(
+        `/events?${params.toString()}`,
+    );
 }
-export function createEvents(newEvent:EventFormData){
-const payload:CreateEventPayload={
-    name: newEvent.name.trim(),
-    categoryId: Number(newEvent.categoryId),
-    description: newEvent.description.trim(),
-    location: newEvent.location.trim(),
-    capacity: Number(newEvent.capacity),
-    startAt: toIsoDate(newEvent.startAt),
-    endAt: toIsoDate(newEvent.endAt),
-    registrationDeadline: toIsoDate(
-        newEvent.registrationDeadline
-    ),
-    isActive: newEvent.isActive === "true",
+
+export function createEvents(
+    newEvent: EventFormData,
+): Promise<CreateEventResponse> {
+    const payload: CreateEventPayload = {
+        name: newEvent.name.trim(),
+        categoryId: Number(newEvent.categoryId),
+        description: newEvent.description.trim(),
+        location: newEvent.location.trim(),
+        capacity: Number(newEvent.capacity),
+        startAt: toIsoDate(newEvent.startAt),
+        endAt: toIsoDate(newEvent.endAt),
+        registrationDeadline: toIsoDate(
+            newEvent.registrationDeadline,
+        ),
+        isActive: newEvent.isActive === "true",
     };
-    return apiPost<CreateEventPayload,CreateEventResponse>("/Events",payload);
+
+    return apiClient.post<CreateEventResponse>(
+        "/events",
+        payload,
+    );
 }
 
 export function getEventById(id: number): Promise<EventDetails> {
-    return apiGet<EventDetails>(`/events/${id}`);
+    return apiClient.get<EventDetails>(`/events/${id}`);
 }
-export function updateEvent(id: number, payload: CreateEventPayload): Promise<void> {
-    return apiPut<CreateEventPayload, void>(`/events/${id}`, payload);
+
+export function updateEvent(
+    id: number,
+    payload: CreateEventPayload,
+): Promise<void> {
+    return apiClient.put<void>(`/events/${id}`, payload);
 }
 
 export function deleteEvent(id: number): Promise<void> {
-    return apiDelete(`/Events/${id}`);
+    return apiClient.delete<void>(`/events/${id}`);
 }
