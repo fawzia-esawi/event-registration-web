@@ -6,3 +6,8 @@ export interface Category {
     createdAt: string;
     updatedAt: string | null;
 }
+
+export interface CreateCategoryRequest {
+    name: string;
+    description: string | null;
+}
