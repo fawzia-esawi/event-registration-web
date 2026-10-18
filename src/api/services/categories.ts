@@ -5,6 +5,8 @@ export const categoriesService = {
     getAll: (includeInactive: boolean) =>
         apiClient.get<Category[]>(`/categories?includeInactive=${includeInactive}`),
 
+    getById: (id: number) => apiClient.get<Category>(`/categories/${id}`),
+
     create: (request: CreateCategoryRequest) =>
         apiClient.post<Category>("/categories", request),
 };
