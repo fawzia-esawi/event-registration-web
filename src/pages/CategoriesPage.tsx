@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { ApiError } from "../api/client.ts";
 import { categoriesService } from "../api/services/categories.ts";
 import CategoryDetails from "../components/categories/CategoryDetails.tsx";
 import CategoryForm from "../components/categories/CategoryForm.tsx";
@@ -12,6 +13,9 @@ function CategoriesPage() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [viewingId, setViewingId] = useState<number | null>(null);
     const [editing, setEditing] = useState<Category | null>(null);
+    const [deleting, setDeleting] = useState<Category | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const fetchCategories = useCallback(
         () => categoriesService.getAll(includeInactive),
@@ -30,6 +34,12 @@ function CategoriesPage() {
         setEditing(category);
     }
 
+    function openDelete(category: Category) {
+        setSuccessMessage(null);
+        setDeleteError(null);
+        setDeleting(category);
+    }
+
     async function handleCreate(values: CategoryFormValues) {
         const created = await categoriesService.create({
             name: values.name,
@@ -46,6 +56,23 @@ function CategoriesPage() {
         setEditing(null);
         setSuccessMessage(`Category "${updated.name}" was updated.`);
         reload();
+    }
+
+    async function handleDelete() {
+        if (deleting === null || isDeleting) return;
+
+        setIsDeleting(true);
+        setDeleteError(null);
+        try {
+            await categoriesService.remove(deleting.id);
+            setSuccessMessage(`Category "${deleting.name}" was deleted.`);
+            setDeleting(null);
+            reload();
+        } catch (err: unknown) {
+            setDeleteError(err instanceof ApiError ? err.message : "Something went wrong.");
+        } finally {
+            setIsDeleting(false);
+        }
     }
 
     return (
@@ -137,6 +164,12 @@ function CategoriesPage() {
                                                 >
                                                     Edit
                                                 </button>
+                                                <button
+                                                    onClick={() => openDelete(category)}
+                                                    className="text-red-600 hover:underline"
+                                                >
+                                                    Delete
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -168,6 +201,37 @@ function CategoriesPage() {
                         onSubmit={handleUpdate}
                         onCancel={() => setEditing(null)}
                     />
+                </Modal>
+            )}
+
+            {deleting !== null && (
+                <Modal title="Delete category">
+                    <p className="text-sm text-gray-700">
+                        Are you sure you want to delete "{deleting.name}"? This action cannot be undone.
+                    </p>
+
+                    {deleteError && (
+                        <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                            {deleteError}
+                        </div>
+                    )}
+
+                    <div className="mt-6 flex justify-end gap-2">
+                        <button
+                            onClick={() => setDeleting(null)}
+                            disabled={isDeleting}
+                            className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-50"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                    </div>
                 </Modal>
             )}
 
