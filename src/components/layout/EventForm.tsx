@@ -3,6 +3,7 @@ import { useState } from "react";
 import InputField from "../ui/InputField.tsx";
 import SelectField from "../ui/SelectField.tsx";
 import type { EventFormData } from "../../types/event.ts";
+import {ApiError} from "../../api/client.ts";
 
 type EventFormProps = {
     title: string;
@@ -24,24 +25,24 @@ const emptyForm: EventFormData = {
     isActive: "",
 };
 
-function EventForm({
-                       title,
-                       submitLabel,
-                       initialData,
-                       onClose,
-                       onSubmit,
-                   }: EventFormProps) {
-    const [formData, setFormData] = useState<EventFormData>(
-        () => initialData ?? { ...emptyForm }
-    );
-
+function EventForm({title, submitLabel, initialData, onClose, onSubmit,}: EventFormProps) {
+    const [formData, setFormData] = useState<EventFormData>(() => initialData ?? { ...emptyForm });
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [errors, setErrors] = useState<{ endAt?: string; registrationDeadline?: string; }>({});//Stores validation errors for the End At and Registration Deadline fields
+    const [submitError, setSubmitError] = useState("");//Stores the error message returned when submitting the form fails
     function updateField(name: keyof EventFormData, value: string) {
-        setFormData((previous) => ({
-            ...previous,
-            [name]: value,
-        }));
+        setFormData((previous) =>
+            ({...previous, [name]: value,})
+        );
+
+        if (name === "endAt" || name === "registrationDeadline") {
+            setErrors((previous) => ({
+                ...previous,
+                [name]: undefined,
+            }));
+        }
+
+        setSubmitError("");
     }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -51,21 +52,34 @@ function EventForm({
         const endAt = new Date(formData.endAt);
         const deadline = new Date(formData.registrationDeadline);
 
+        const validationErrors: typeof errors = {};
+
         if (endAt <= startAt) {
-            alert("End date must be after start date.");
-            return;
+            validationErrors.endAt =
+                "End date must be after start date.";
         }
 
         if (deadline > startAt) {
-            alert(
-                "Registration deadline must be before or equal to start date."
-            );
+            validationErrors.registrationDeadline =
+                "Registration deadline must be before or equal to start date.";
+        }
+
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length > 0) {
             return;
         }
 
         try {
             setIsSubmitting(true);
+            setSubmitError("");
             await onSubmit(formData);
+        } catch (error) {
+            if (error instanceof ApiError) {
+                setSubmitError(error.message);
+            } else {
+                setSubmitError("An unexpected error occurred. Please try again.");
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -89,6 +103,7 @@ function EventForm({
                 </div>
 
                 <form onSubmit={handleSubmit}>
+
                     <div className="flex flex-col gap-4 text-gray-600">
                         <div className="flex flex-row justify-around gap-4">
                             <InputField
@@ -177,7 +192,7 @@ function EventForm({
                                     updateField("startAt", e.target.value)
                                 }
                             />
-
+                            <div className="min-w-0 flex-1">
                             <InputField
                                 label="End At"
                                 id="endAt"
@@ -189,9 +204,16 @@ function EventForm({
                                     updateField("endAt", e.target.value)
                                 }
                             />
+                            {errors.endAt && (
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.endAt}
+                                </p>
+                            )}
+                            </div>
                         </div>
 
                         <div className="flex flex-row justify-around gap-4">
+                            <div className="min-w-0 flex-1">
                             <InputField
                                 label="Registration Deadline"
                                 id="registrationDeadline"
@@ -206,7 +228,12 @@ function EventForm({
                                     )
                                 }
                             />
-
+                            {errors.registrationDeadline && (
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.registrationDeadline}
+                                </p>
+                            )}
+                            </div>
                             <SelectField
                                 label="Is Active"
                                 id="isActive"
@@ -223,7 +250,11 @@ function EventForm({
                             </SelectField>
                         </div>
                     </div>
-
+                    {submitError && (
+                        <p className="mt-4 text-sm text-red-600" role="alert">
+                            {submitError}
+                        </p>
+                    )}
                     <div className="mt-6 flex justify-end gap-2">
                         <button
                             type="submit"

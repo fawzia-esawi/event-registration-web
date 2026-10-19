@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import EventForm from "./EventForm.tsx";
-import {getEventById, updateEvent} from "../../api/services/events.ts";
-import {type CreateEventPayload, type EventDetails, type EventFormData} from "../../types/event.ts";
+import {eventsService} from "../../api/services/events.ts";
+import {type CreateEventPayload, type EventDetails, type EventFormData, toIsoDate} from "../../types/event.ts";
+import {ApiError} from "../../api/client.ts";
 
 interface EditEventProps {
     id: number;
@@ -28,10 +29,14 @@ function EditEvent({ id, onClose ,onEventUpdated}: EditEventProps) {
     useEffect(() => {
         async function loadEvent() {
             try {
-                const data = await getEventById(id);
+                const data = await eventsService.getById(id);
                 setEvent(data);
-            } catch {
-                setError("Failed to load event details.");
+            } catch (error) {
+                if (error instanceof ApiError) {
+                    setError(error.message);
+                } else {
+                    setError("Failed to load event details.");
+                }
             }
         }
 
@@ -80,24 +85,16 @@ function EditEvent({ id, onClose ,onEventUpdated}: EditEventProps) {
                     description: data.description,
                     location: data.location,
                     capacity: Number(data.capacity),
-                    startAt: data.startAt,
-                    endAt: data.endAt,
-                    registrationDeadline: data.registrationDeadline,
+                    startAt: toIsoDate(data.startAt),
+                    endAt: toIsoDate(data.endAt),
+                    registrationDeadline: toIsoDate(data.registrationDeadline),
                     isActive: data.isActive === "true",
                 };
 
-                try {
-                    await updateEvent(id, payload);
-                    alert("Event updated successfully.");
-                    onEventUpdated();
-                    onClose();
-                } catch (error) {
-                    alert(
-                        error instanceof Error
-                            ? error.message
-                            : "Failed to update event."
-                    );
-                }
+                await eventsService.update(id, payload);
+
+                onEventUpdated();
+                onClose();
             }}        />
     );
 }

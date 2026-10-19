@@ -1,19 +1,21 @@
 import HorizontalLine from "../ui/HorizontalLine.tsx";
 import {useEffect, useState} from "react";
-import {deleteEvent, type EventFilters, getEvents} from "../../api/services/events.ts";
+import { type EventFilters, eventsService} from "../../api/services/events.ts";
 import type { Event } from "../../types/event";
 import { Pencil, Trash2 } from "lucide-react";
 import EditEvent from "./EditEvent.tsx";
+import {ApiError} from "../../api/client.ts";
 
 type EventListProps = {
     filters: EventFilters;
     refreshKey: number;
     onEventUpdated: () => void;
+    onEventDeleted: (message: string)  => void;
 };
 
-function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
+function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventListProps,) {
     const [page, setPage] = useState<number>(1);
-    const pageSize=2;
+    const pageSize=10;
     const [totalPages, setTotalPages] = useState<number>(1);
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
@@ -30,16 +32,15 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
 
         try {
             setDeletingEventId(event.id);
-            await deleteEvent(event.id);
-            alert("Event deleted successfully.");
-            onEventUpdated();
+            await eventsService.remove(event.id);
+            onEventDeleted("Event deleted successfully.");
         } catch (error) {
-            alert(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to delete event."
-            );
-        } finally {
+            if (error instanceof ApiError) {
+                onEventDeleted(error.message);
+            } else {
+                onEventDeleted("Failed to delete event.");
+            }}
+        finally {
             setDeletingEventId(null);
         }
     }
@@ -48,7 +49,7 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
     useEffect(() => {
         let cancelled = false;
 
-        getEvents(page, pageSize, filters)
+        eventsService.getAll(page, pageSize, filters)
             .then((data) => {
                 if (cancelled) return;
 
@@ -56,10 +57,14 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
                 setTotalPages(data.totalPages);
                 setError(null);
             })
-            .catch(() => {
+            .catch((error) => {
                 if (cancelled) return;
 
-                setError("Failed to load events.");
+                if (error instanceof ApiError) {
+                    setError(error.message);
+                } else {
+                    setError("Failed to load events.");
+                }
             })
             .finally(() => {
                 if (!cancelled) {
@@ -81,9 +86,11 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
     }
     return (
         <div >
+          <div className="overflow-x-auto">
+            <div className="min-w-[1050px]">
 
-            {/* Events Display Area */}
-            <div className="min-h-[365px] flex-col max-h-[365px] overflow-y-auto ">
+                {/* Events Display Area */}
+                <div className="min-h-[365px] flex-col max-h-[365px] overflow-y-auto ">
                 <div className="grid grid-cols-[2fr_1.2fr_1.5fr_1.3fr_1fr_1.3fr_1fr_0.8fr_0.8fr] text-gray-500">
                     <span>EVENT</span>
                     <span>CATEGORY</span>
@@ -135,6 +142,7 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
                             </button>
 
                         </div>
+
                     </div>
                 ))}
                 {selectedEventId !== null && (
@@ -149,7 +157,8 @@ function EventList({ filters, refreshKey,onEventUpdated }: EventListProps,) {
                 )}
             </div>
 
-
+            </div>
+          </div>
 
 
             {/* Pagination Area */}

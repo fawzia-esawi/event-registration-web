@@ -1,8 +1,7 @@
 
 import EventForm from "./EventForm.tsx";
-import { createEvents } from "../../api/services/events.ts";
+import {eventsService} from "../../api/services/events.ts";
 import type {
-    CreateEventResponse,
     EventFormData,
 } from "../../types/event.ts";
 
@@ -13,9 +12,8 @@ type CreateEventProps = {
 
 function CreateEvent({ onClose, onEventCreated }: CreateEventProps) {
     async function handleCreate(data: EventFormData) {
-        const response: CreateEventResponse = await createEvents(data);
+        await eventsService.create(data);
 
-        alert(response.message);
         onEventCreated();
         onClose();
     }

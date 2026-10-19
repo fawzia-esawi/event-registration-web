@@ -1,7 +1,7 @@
 import EventList from "../components/layout/EventList.tsx";
 import InputField from "../components/ui/InputField";
 import SelectField from "../components/ui/SelectField";
-import {useState} from "react";
+import {useCallback,useState,useEffect} from "react";
 import CreateEvent from "../components/layout/CreateEvent";
 
 function Events() {
@@ -12,18 +12,26 @@ function Events() {
         fromDate: "",
         toDate: "",
     });
+    const [searchInput, setSearchInput] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [deleteMessage, setDeleteMessage] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
-    function updateFilter(
-        name: keyof typeof filters,
-        value: string
-    ) {
+    const updateFilter = useCallback((name: keyof typeof filters, value: string) => {
         setFilters((previous) => ({
             ...previous,
             [name]: value,
         }));
-    }
+    }, []);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            updateFilter("search", searchInput);
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [searchInput,updateFilter]);
     function clearFilters() {
+        setSearchInput("");
         setFilters({
             search: "",
             categoryId: "",
@@ -38,14 +46,24 @@ function Events() {
             <div className="h-[8%]  mt-1.5  flex justify-between items-center ">
                 <h1 className="text-2xl font-medium text-black"> Events </h1>
                 <button
-                    onClick={() => setIsCreateModalOpen(true)}
+                    onClick={() => {
+                        setSuccessMessage("");
+                        setIsCreateModalOpen(true)
+                    }}
                     className="bg-[#4C1D95] w-35 text-white text-sm p-2 rounded-2xl">
                     +  Create Event
                 </button>
                 {isCreateModalOpen && (
                     <CreateEvent
                         onClose={() => setIsCreateModalOpen(false)}
-                        onEventCreated={() => setRefreshKey((prev) => prev + 1)}
+                        onEventCreated={() => {
+                            setRefreshKey((prev) => prev + 1);
+                            setSuccessMessage("Event created successfully.");
+                            setTimeout(() => {
+                                setSuccessMessage("");
+                            }, 1000);
+                        }
+                    }
 
                     />
                 )}
@@ -58,13 +76,12 @@ function Events() {
                     <InputField
                         label="Search"
                         id="eventSearch"
-                        value={filters.search}
+                        value={searchInput}
                         type="text"
                         placeholder="Search by event name or location..."
                         className="min-w-[220px] flex-[2]"
-                        onChange={(e) =>
-                            updateFilter("search", e.target.value)
-                        }
+                        onChange={(e) => setSearchInput(e.target.value)}
+
                     />
 
                     {/* Category Filter */}
@@ -125,8 +142,43 @@ function Events() {
                 </div>
             </div>
 
+            {successMessage && (
+                <p
+                    className="mb-3 rounded-lg bg-green-100 p-3 text-sm text-green-800"
+                    role="status"
+                >
+                    {successMessage}
+                </p>
+            )}
+            {deleteMessage && (
+                <p className="mb-3 rounded-lg bg-red-100 p-3 text-sm text-red-800" role="alert">
+                    {deleteMessage}
+                </p>
+            )}
+
+
             <div className="h-[75%] mt-1 mb-1 bg-[#FAFAFA] border border-[#D8D8D8] rounded-lg p-4 shadow-sm">
-            <EventList key={JSON.stringify(filters)} filters={filters} refreshKey={refreshKey}    onEventUpdated={() => setRefreshKey((previous) => previous + 1)}
+            <EventList key={
+                JSON.stringify(filters)}
+                       filters={filters}
+                       refreshKey={refreshKey}
+                       onEventUpdated={() => {
+                           setRefreshKey((previous) => previous + 1);
+                           setSuccessMessage("Event updated successfully.");
+
+                           setTimeout(() => {
+                               setSuccessMessage("");
+                           }, 2000);
+                       }}
+                       onEventDeleted={(message) => {
+                           setRefreshKey((previous) => previous + 1);
+                           setDeleteMessage(message);
+
+                           setTimeout(() => {
+                               setDeleteMessage("");
+                           }, 2000);
+                       }}
+
             />
             </div>
         </div>

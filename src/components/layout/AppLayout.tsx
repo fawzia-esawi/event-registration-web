@@ -42,7 +42,7 @@ function AppLayout() {
     };
     return (
         <div className="flex min-h-screen bg-[#F5F3F7]">
-            <div className="hidden md:flex
+            <div className=" flex
             w-20 lg:w-64
             min-h-screen
             flex-col
