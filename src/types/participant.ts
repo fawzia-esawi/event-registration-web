@@ -16,3 +16,7 @@ export interface ParticipantsResponse {
     totalCount: number;
     totalPages: number;
 }
+export interface ParticipantFilters {
+    search?: string;
+    isActive?: boolean;
+}
