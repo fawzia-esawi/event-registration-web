@@ -20,3 +20,11 @@ export interface ParticipantFilters {
     search?: string;
     isActive?: boolean;
 }
+export interface ParticipantFormValues {
+    fullName: string;
+    email: string;
+    phone: string;
+    dateOfBirth: string | null;
+}
+
+export type CreateParticipantRequest = ParticipantFormValues;

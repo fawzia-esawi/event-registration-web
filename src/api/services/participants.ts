@@ -1,5 +1,10 @@
 import { apiClient } from "../client.ts";
-import type { ParticipantFilters, ParticipantsResponse } from "../../types/participant.ts";
+import type {
+    CreateParticipantRequest,
+    Participant,
+    ParticipantFilters,
+    ParticipantsResponse,
+} from "../../types/participant.ts";
 
 export const participantsService = {
     getAll: (page: number, pageSize: number, filters: ParticipantFilters = {}) => {
@@ -17,4 +22,7 @@ export const participantsService = {
 
         return apiClient.get<ParticipantsResponse>(`/participants?${params.toString()}`);
     },
+
+    create: (request: CreateParticipantRequest) =>
+        apiClient.post<Participant>("/participants", request),
 };
