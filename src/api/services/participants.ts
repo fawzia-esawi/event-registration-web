@@ -4,6 +4,7 @@ import type {
     Participant,
     ParticipantFilters,
     ParticipantsResponse,
+    UpdateParticipantRequest,
 } from "../../types/participant.ts";
 
 export const participantsService = {
@@ -25,4 +26,7 @@ export const participantsService = {
 
     create: (request: CreateParticipantRequest) =>
         apiClient.post<Participant>("/participants", request),
+
+    update: (id: number, request: UpdateParticipantRequest) =>
+        apiClient.put<Participant>(`/participants/${id}`, request),
 };
