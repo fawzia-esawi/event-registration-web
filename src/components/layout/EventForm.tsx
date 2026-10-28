@@ -4,6 +4,7 @@ import InputField from "../ui/InputField.tsx";
 import SelectField from "../ui/SelectField.tsx";
 import type { EventFormData } from "../../types/event.ts";
 import {ApiError} from "../../api/client.ts";
+import type {Category} from "../../types/category.ts";
 
 type EventFormProps = {
     title: string;
@@ -11,6 +12,7 @@ type EventFormProps = {
     initialData?: EventFormData;
     onClose: () => void;
     onSubmit: (data: EventFormData) => Promise<void>;
+    categories: Category[];
 };
 
 const emptyForm: EventFormData = {
@@ -25,7 +27,7 @@ const emptyForm: EventFormData = {
     isActive: "",
 };
 
-function EventForm({title, submitLabel, initialData, onClose, onSubmit,}: EventFormProps) {
+function EventForm({title, submitLabel, initialData, onClose, onSubmit,categories}: EventFormProps) {
     const [formData, setFormData] = useState<EventFormData>(() => initialData ?? { ...emptyForm });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ endAt?: string; registrationDeadline?: string; }>({});//Stores validation errors for the End At and Registration Deadline fields
@@ -130,8 +132,12 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,}: EventF
                                     updateField("categoryId", e.target.value)
                                 }
                             >
-                                <option value="">Select Category</option>
-                                <option value="1">Technology</option>
+                                <option value="">Select a category</option>
+                                {categories.map((category) => (
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </option>
+                                ))}
                             </SelectField>
                         </div>
 

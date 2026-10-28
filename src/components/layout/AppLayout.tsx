@@ -5,6 +5,7 @@ import Events from "../../pages/EventsPage.tsx";
 import Categories from "../../pages/CategoriesPage.tsx";
 import Dashboard from "../../pages/DashboardPage.tsx";
 import {useState,useEffect} from "react";
+import EventDetailsPage from "../../pages/EventDetailsPage.tsx";
 
 function AppLayout() {
     const [path, setPath] = useState(window.location.pathname);
@@ -22,6 +23,8 @@ function AppLayout() {
     }, []);
 
     const renderPage = () => {
+        const eventDetailsMatch = path.match(/^\/events\/(\d+)$/);
+
         if (path === "/") {
             return <Dashboard/>;
         }
@@ -33,6 +36,13 @@ function AppLayout() {
         if (path === "/events") {
             return <Events />;
         }
+        if (eventDetailsMatch) {
+            const eventId = Number(eventDetailsMatch[1]);
+
+            if (eventId > 0) {
+                return <EventDetailsPage eventId={eventId} />;
+            }
+        }
 
         if (path === "/participants") {
             return <Participants />;
@@ -41,10 +51,10 @@ function AppLayout() {
         return <NotFoundPage/>;
     };
     return (
-        <div className="flex min-h-screen bg-[#F5F3F7]">
+        <div className="flex min-h-screen  items-stretch bg-[#F5F3F7]">
             <div className=" flex
             w-20 lg:w-64
-            min-h-screen
+            self-stretch
             flex-col
             bg-gradient-to-b from-[#0B0614] to-[#1A0F2E]
             text-white ">
