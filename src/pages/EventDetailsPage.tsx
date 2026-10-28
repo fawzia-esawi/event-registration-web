@@ -114,11 +114,7 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
         setRegistrationsRefreshListKey((key) => key + 1);
     }
 
-   // Calculate the percentage of capacity used by active registrations.
-    const takenPercent = Math.min(
-        100,
-        Math.round((eventDetails.activeRegistrationCount / eventDetails.capacity) * 100)
-    );
+
 
 
     if (isLoading) {
@@ -130,7 +126,11 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
     if (!eventDetails) {
         return <p className=" p-4 text-red-600">Event not found</p>
     }
-
+// Calculate the percentage of capacity used by active registrations.
+    const takenPercent = Math.min(
+        100,
+        Math.round((eventDetails.activeRegistrationCount / eventDetails.capacity) * 100)
+    );
     return (
         <div className="min-h-screen  p-4 flex flex-col gap-2">
             {registrationMessage && (
