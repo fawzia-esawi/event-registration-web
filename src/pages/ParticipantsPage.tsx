@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { participantsService } from "../api/services/participants.ts";
 import ParticipantForm from "../components/participants/ParticipantForm.tsx";
 import Modal from "../components/ui/Modal.tsx";
@@ -7,6 +7,7 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue.ts";
 import type { ParticipantFormValues } from "../types/participant.ts";
 
 const PAGE_SIZE = 10;
+const SUCCESS_MESSAGE_DURATION_MS = 5000;
 
 function ParticipantsPage() {
     const [page, setPage] = useState(1);
@@ -14,6 +15,18 @@ function ParticipantsPage() {
     const [status, setStatus] = useState("");
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (successMessage === null) {
+            return undefined;
+        }
+
+        const timer = window.setTimeout(() => {
+            setSuccessMessage(null);
+        }, SUCCESS_MESSAGE_DURATION_MS);
+
+        return () => window.clearTimeout(timer);
+    }, [successMessage]);
 
     const search = useDebouncedValue(searchInput.trim(), 400);
 
