@@ -60,10 +60,10 @@ export interface EventDetails {
     endAt: string;
     registrationDeadline: string;
     capacity: number;
+    activeRegistrationCount: number;
+    availableSeats: number;
     isActive: boolean;
+    eventStatus: string;
     createdAt: string;
     updatedAt: string | null;
-}
-export function toIsoDate(value: string): string {
-    return new Date(value).toISOString();
 }

@@ -5,15 +5,18 @@ import type { Event } from "../../types/event";
 import { Pencil, Trash2 } from "lucide-react";
 import EditEvent from "./EditEvent.tsx";
 import {ApiError} from "../../api/client.ts";
+import {navigate} from "../../utils/navigation.ts";
+import type {Category} from "../../types/category.ts";
 
 type EventListProps = {
     filters: EventFilters;
     refreshKey: number;
     onEventUpdated: () => void;
     onEventDeleted: (message: string)  => void;
+    categories: Category[];
 };
 
-function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventListProps,) {
+function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted ,categories}: EventListProps,) {
     const [page, setPage] = useState<number>(1);
     const pageSize=10;
     const [totalPages, setTotalPages] = useState<number>(1);
@@ -86,18 +89,20 @@ function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventL
     }
     return (
         <div >
-          <div className="overflow-x-auto">
+          <div className="w-full min-h-[365px] max-h-[365px] overflow-x-auto overflow-y-auto">
             <div className="min-w-[1050px]">
 
                 {/* Events Display Area */}
-                <div className="min-h-[365px] flex-col max-h-[365px] overflow-y-auto ">
-                <div className="grid grid-cols-[2fr_1.2fr_1.5fr_1.3fr_1fr_1.3fr_1fr_0.8fr_0.8fr] text-gray-500">
+
+                <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.3fr_1.3fr_0.7fr_1.2fr_1fr_0.9fr_0.7fr_0.8fr]   gap-3 text-gray-500 font-medium py-3">
                     <span>EVENT</span>
                     <span>CATEGORY</span>
                     <span>LOCATION</span>
                     <span>START</span>
                     <span>END</span>
                     <span>CAPACITY</span>
+                    <span>Active Registration Count</span>
+                    <span>Available Seats</span>
                     <span>STATUS</span>
                     <span>ACTIVE</span>
                     <span>ACTION</span>
@@ -106,10 +111,8 @@ function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventL
                 <HorizontalLine />
 
                 {events.map((event) => (
-                    <div
-                        key={event.id}
-                        className="grid grid-cols-[2fr_1.2fr_1.5fr_1.3fr_1fr_1.3fr_1fr_0.8fr_0.8fr] border-t border-[#D8D8D8] text-gray-500 gap-3 py-4"
-                    >
+                    <div key={event.id}>
+                    <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.3fr_1.3fr_0.7fr_1.2fr_1fr_0.9fr_0.7fr_0.8fr] border-t border-[#D8D8D8] text-gray-500 gap-3 py-4">
                         <span className="text-[#4C1D95] font-medium">
                             {event.name}
                         </span>
@@ -120,6 +123,8 @@ function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventL
                         </span>
                         <span>{new Date(event.endAt).toLocaleString()}</span>
                         <span className="flex flex-col items-center">{event.capacity}</span>
+                        <span className="text-center">{event.activeRegistrationCount}</span>
+                        <span className="text-center">{event.availableSeats}</span>
                         <span>{event.eventStatus}</span>
                         <span>{event.isActive ? "Active" : "InActive"}</span>
                         <div className="flex items-center gap-2">
@@ -142,7 +147,12 @@ function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventL
                             </button>
 
                         </div>
-
+                    </div>
+                    <div className="flex justify-end pb-2">
+                         <button className="bg-[#4C1D95] w-20 text-white text-sm p-2 rounded-xl " onClick={()=>navigate(`/events/${event.id}`)}>
+                         view
+                         </button>
+                    </div>
                     </div>
                 ))}
                 {selectedEventId !== null && (
@@ -150,12 +160,13 @@ function EventList({ filters, refreshKey,onEventUpdated,onEventDeleted }: EventL
                         id={selectedEventId}
                         onClose={() => setSelectedEventId(null)}
                         onEventUpdated={onEventUpdated}
+                        categories={categories ?? []}
                     />
                 )}
                 {events.length === 0 && (
                     <p className="py-4 text-gray-500">No events found.</p>
                 )}
-            </div>
+
 
             </div>
           </div>

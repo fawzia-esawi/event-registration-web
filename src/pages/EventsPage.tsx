@@ -3,6 +3,13 @@ import InputField from "../components/ui/InputField";
 import SelectField from "../components/ui/SelectField";
 import {useCallback,useState,useEffect} from "react";
 import CreateEvent from "../components/layout/CreateEvent";
+import {categoriesService} from "../api/services/categories.ts";
+import {useApi} from "../hooks/useApi.ts";
+
+
+
+const fetchActiveCategories = () => categoriesService.getAll(true);
+
 
 function Events() {
     const [filters, setFilters] = useState({
@@ -23,6 +30,18 @@ function Events() {
             [name]: value,
         }));
     }, []);
+
+    const {
+        data: categories,
+        isLoading: isLoadingCategories,
+        error: categoriesError,
+    } = useApi(fetchActiveCategories);
+
+    const activeCategories = (categories ?? []).filter(
+        (category) => category.isActive
+    );
+
+
     useEffect(() => {
         const timer = setTimeout(() => {
             updateFilter("search", searchInput);
@@ -50,11 +69,14 @@ function Events() {
                         setSuccessMessage("");
                         setIsCreateModalOpen(true)
                     }}
-                    className="bg-[#4C1D95] w-35 text-white text-sm p-2 rounded-2xl">
+                    disabled={isLoadingCategories || !!categoriesError}
+                    className="bg-[#4C1D95] w-35 text-white text-sm p-2 rounded-2xl"
+                >
                     +  Create Event
                 </button>
                 {isCreateModalOpen && (
                     <CreateEvent
+                        categories={activeCategories}
                         onClose={() => setIsCreateModalOpen(false)}
                         onEventCreated={() => {
                             setRefreshKey((prev) => prev + 1);
@@ -91,8 +113,19 @@ function Events() {
                         value={filters.categoryId}
                         className="min-w-[140px] flex-1"
                         onChange={(e) =>
-                            updateFilter("categoryId", e.target.value)}                    >
-                        <option value="" >All Categories</option>
+                            updateFilter("categoryId", e.target.value)}
+                        disabled={isLoadingCategories || !!categoriesError}
+                     >
+                        <option value="">
+                            {isLoadingCategories
+                                ? "Loading categories..."
+                                : "Select category"}
+                        </option>
+                        {categories?.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
                     </SelectField>
 
                     {/* Active Filter */}
@@ -155,11 +188,13 @@ function Events() {
                     {deleteMessage}
                 </p>
             )}
-
+            {categoriesError && (
+                <p className="text-red-500">{categoriesError}</p>
+            )}
 
             <div className="h-[75%] mt-1 mb-1 bg-[#FAFAFA] border border-[#D8D8D8] rounded-lg p-4 shadow-sm">
-            <EventList key={
-                JSON.stringify(filters)}
+            <EventList
+                       key={JSON.stringify(filters)}
                        filters={filters}
                        refreshKey={refreshKey}
                        onEventUpdated={() => {
@@ -168,15 +203,16 @@ function Events() {
 
                            setTimeout(() => {
                                setSuccessMessage("");
-                           }, 2000);
+                           }, 2500);
                        }}
+                       categories={activeCategories}
                        onEventDeleted={(message) => {
                            setRefreshKey((previous) => previous + 1);
                            setDeleteMessage(message);
 
                            setTimeout(() => {
                                setDeleteMessage("");
-                           }, 2000);
+                           }, 2500);
                        }}
 
             />

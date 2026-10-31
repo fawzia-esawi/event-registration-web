@@ -1,28 +1,18 @@
 import { useEffect, useState } from "react";
 import EventForm from "./EventForm.tsx";
 import {eventsService} from "../../api/services/events.ts";
-import {type CreateEventPayload, type EventDetails, type EventFormData, toIsoDate} from "../../types/event.ts";
+import {type CreateEventPayload, type EventDetails, type EventFormData} from "../../types/event.ts";
 import {ApiError} from "../../api/client.ts";
+import { toIsoDate,toDateTimeLocal } from "../../utils/formatters.ts";
+import type {Category} from "../../types/category.ts";
 
 interface EditEventProps {
     id: number;
     onClose: () => void;
     onEventUpdated: () => void;
+    categories: Category[];
 }
-function toDateTimeLocal(value: string): string {
-    if (!value) return "";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) return "";
-
-    const offset = date.getTimezoneOffset() * 60_000;
-
-    return new Date(date.getTime() - offset)
-        .toISOString()
-        .slice(0, 16);
-}
-function EditEvent({ id, onClose ,onEventUpdated}: EditEventProps) {
+function EditEvent({ id, onClose ,onEventUpdated,categories}: EditEventProps) {
     const [event, setEvent] = useState<EventDetails | null>(null);
     const [error, setError] = useState("");
 
@@ -78,6 +68,7 @@ function EditEvent({ id, onClose ,onEventUpdated}: EditEventProps) {
             submitLabel="Save Changes"
             initialData={initialData}
             onClose={onClose}
+            categories={categories ?? []}
             onSubmit={async (data: EventFormData) => {
                 const payload: CreateEventPayload = {
                     name: data.name,

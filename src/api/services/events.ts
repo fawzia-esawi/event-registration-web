@@ -5,8 +5,8 @@ import {
     type EventFormData,
     type CreateEventResponse,
     type EventDetails,
-    toIsoDate,
 } from "../../types/event.ts";
+import {toIsoDate} from "../../utils/formatters.ts";
 
 export type EventFilters = {
     search?: string;
