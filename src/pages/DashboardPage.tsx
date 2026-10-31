@@ -144,7 +144,48 @@ function DashboardPage() {
                         />
                     </div>
                 )}
+                {!isLoading && !error && data && (
+                    <div className="dash-glass rounded-3xl p-6">
+                        <h2 className="text-xl font-semibold text-white">
+                            Upcoming Events
+                        </h2>
 
+                        {data.upcomingEvents.length === 0 ? (
+                            <p className="mt-4 text-sm text-violet-100/70">
+                                No upcoming events found.
+                            </p>
+                        ) : (
+                            <div className="mt-5 overflow-x-auto">
+                                <div className="min-w-[900px]">
+                                    <div className="grid grid-cols-7 gap-4 border-b border-white/20 p-3 text-sm font-semibold text-violet-200">
+                                        <div>Event Name</div>
+                                        <div>Category</div>
+                                        <div>Start Date</div>
+                                        <div>Location</div>
+                                        <div>Capacity</div>
+                                        <div>Registrations</div>
+                                        <div>Available Seats</div>
+                                    </div>
+
+                                    {data.upcomingEvents.map((event) => (
+                                        <div
+                                            key={event.eventId}
+                                            className="grid grid-cols-7 gap-4 border-b border-white/10 p-3 text-sm text-violet-50"
+                                        >
+                                            <div>{event.eventName}</div>
+                                            <div>{event.categoryName}</div>
+                                            <div>{new Date(event.startAt).toLocaleString()}</div>
+                                            <div>{event.location}</div>
+                                            <div>{event.capacity}</div>
+                                            <div>{event.activeRegistrationCount}</div>
+                                            <div>{event.availableSeats}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
                 <div className="grid gap-4 lg:grid-cols-3">
                     <section className="dash-glass rounded-3xl p-6 lg:col-span-2">
                         <h2 className="text-lg font-semibold text-white">Quick actions</h2>
