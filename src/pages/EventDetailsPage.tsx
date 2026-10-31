@@ -10,6 +10,8 @@ import RegistrationsList from "../components/layout/RegistrationsList.tsx";
 import SelectField from "../components/ui/SelectField.tsx";
 import type {CreateRegistration} from "../types/registration.ts";
 import {registrationsService} from "../api/services/registrations.ts";
+import type {Participant} from "../types/participant.ts";
+import {participantsService} from "../api/services/participants.ts";
 
 function getUnavailableReason(event: EventDetails): string | null {
     const now = Date.now();
@@ -30,7 +32,9 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
     const [registrationMessage, setRegistrationMessage] = useState("");
     const [registrationError, setRegistrationError] = useState("");
     const [registrationsRefreshListKey, setRegistrationsRefreshListKey] = useState(0);
-
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
+    const [participantsError, setParticipantsError] = useState("");
 
     const loadEventDetails = useCallback(async () => {
         setError("");
@@ -47,6 +51,29 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
         }
     }, [eventId]);
 
+    // Load active participants when the registration popup opens.
+    const loadParticipants = async () => {
+        setIsLoadingParticipants(true);
+        setParticipantsError("");
+
+        try {
+            const response = await participantsService.getAll(1, 100, {
+                isActive: true,
+            });
+
+            setParticipants(response.items);
+        } catch (error) {
+            if (error instanceof ApiError) {
+                setParticipantsError(error.message);
+            } else {
+                setParticipantsError("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoadingParticipants(false);
+        }
+    };
+
+
     // Load event details whenever the event ID changes.
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -57,6 +84,7 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
 
         return () => clearTimeout(timer);
     }, [loadEventDetails]);
+
 
     // Clear registration messages after three seconds.
     useEffect(() => {
@@ -156,7 +184,11 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
                    </h1>
                     <div className="flex flex-col gap-2">
                     <button
-                        onClick={() => setIsRegisterPopupOpen(true)}
+                        onClick={() => {
+                            setIsRegisterPopupOpen(true);
+                            loadParticipants();
+                        }
+                        }
                         disabled={unavailableReason !== null}
                         className="bg-[#4C1D95] hover:bg-[#3B1677] text-white text-sm px-4 py-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#4C1D95]"
                     >
@@ -221,18 +253,25 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
                                 onChange={(e) => {
                                     const value = e.target.value;
                                     setParticipantId(value === "" ? "" : Number(value));
-                                }}                            >
+                                }}
+                            >
                                 <option value="" disabled>
-                                    Select a participant
+                                    {isLoadingParticipants
+                                        ? "Loading participants..."
+                                        : "Select a participant"}
                                 </option>
-                                <option value="1" >
-                                    Lina Khalil
-                                </option>
-                                <option value="7" >
-                                    Noor Samir
-                                </option>
-                            </SelectField>
 
+                                {participants.map((participant) => (
+                                    <option key={participant.id} value={participant.id}>
+                                        {participant.fullName}
+                                    </option>
+                                ))}
+                            </SelectField>
+                            {participantsError && (
+                                <p className="text-sm text-red-600">
+                                    {participantsError}
+                                </p>
+                            )}
                             <div>
                                 <label
                                     htmlFor="registrationNotes"
