@@ -1,7 +1,7 @@
 import HorizontalLine from "../ui/HorizontalLine.tsx";
 import {useCallback,useEffect,useState} from "react";
 import {registrationsService} from "../../api/services/registrations.ts";
-import type {Registration,RegistrationDetails} from "../../types/registration.ts";
+import type {Registration} from "../../types/registration.ts";
 import {ApiError} from "../../api/client.ts";
 import InputField from "../ui/InputField.tsx";
 import SelectField from "../ui/SelectField.tsx";
@@ -20,26 +20,25 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
     const [operationError, setOperationError] = useState("");
     const [isProcessing, setIsProcessing] = useState<number | null>(null);
     const[popupViewOpen,setPopupViewOpen] =useState<boolean>(false);
-    const [registrationDetails, setRegistrationDetails] = useState<RegistrationDetails | null>(null);
+    const [registrationDetails, setRegistrationDetails] = useState<Registration| null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const [popupViewError, setPopupViewError] = useState("");
     async function handleCancel(registrationId: number) {
+        if (!window.confirm("Are you sure you want to cancel this registration?")) {
+            return;
+        }
         try {
             setIsProcessing(registrationId);
             setOperationError("");
             setSuccessMessage("");
 
-            const result = await registrationsService.cancel(registrationId);
+            await registrationsService.cancel(registrationId);
 
-            setSuccessMessage(result.message);
+            setSuccessMessage("Registration cancelled successfully.");
             await onRegistrationChanged();
         } catch (error) {
-            console.log("Cancel error:", error);
-            console.log("Is ApiError:", error instanceof ApiError);
 
             if (error instanceof ApiError) {
-                console.log("Status:", error.status);
-                console.log("Message:", error.message);
                 setOperationError(error.message);
             } else {
                 setOperationError("Something went wrong. Please try again.");
@@ -59,7 +58,7 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
                 notes: registration.notes ?? undefined
             });
 
-            setSuccessMessage(result.message);
+            setSuccessMessage(`${result.participantName} was registered again.`);
             await onRegistrationChanged();
         } catch (error) {
             if (error instanceof ApiError) {
@@ -155,7 +154,7 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
             {/* Show the popup only when it is open. */}
             {popupViewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-md rounded-xl border border-[#D8D8D8] bg-white p-6 shadow-xl">
+                    <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-[#D8D8D8] bg-white p-6 shadow-xl">
                         <div className="mb-5 flex items-center justify-between">
                             <h2 className="text-xl font-bold text-[#4C1D95]">
                                 Registration Details
@@ -182,53 +181,60 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
                             <div className="space-y-4">
 
                                 <div>
-                                    <p className="text-sm text-gray-500">
-                                        Participant Name
+                                    <p className="text-sm text-gray-500">Event</p>
+                                    <p className="font-medium text-gray-900">
+                                        {registrationDetails.eventName}
                                     </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm text-gray-500">Participant Name</p>
                                     <p className="font-medium text-gray-900">
                                         {registrationDetails.participantName}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500">
-                                        Registration Status
+                                    <p className="text-sm text-gray-500">Email</p>
+                                    <p className="text-gray-900 break-all">
+                                        {registrationDetails.participantEmail}
                                     </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm text-gray-500">Phone</p>
+                                    <p className="text-gray-900">
+                                        {registrationDetails.participantPhone}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm text-gray-500">Registration Status</p>
                                     <span
                                         className={`inline-block rounded-full px-3 py-1 text-sm ${
                                             registrationDetails.status === 1
                                                 ? "bg-green-100 text-green-700"
                                                 : "bg-red-100 text-red-700"
                                         }`}
-                                    >
-                            {registrationDetails.status === 1
-                                ? "Active"
-                                : "Cancelled"}
-                        </span>
+                                    >{registrationDetails.statusName}</span>
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500">
-                                        Notes
-                                    </p>
+                                    <p className="text-sm text-gray-500">Notes</p>
                                     <p className="whitespace-pre-wrap text-gray-900">
                                         {registrationDetails.notes || "No notes"}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500">
-                                        Registered At
-                                    </p>
+                                    <p className="text-sm text-gray-500">Registered At</p>
                                     <p className="text-gray-900">
                                         {formatDateTime(registrationDetails.registeredAt)}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500">
-                                        Cancelled At
-                                    </p>
+                                    <p className="text-sm text-gray-500">Cancelled At</p>
                                     <p className="text-gray-900">
                                         {registrationDetails.cancelledAt
                                             ? formatDateTime(registrationDetails.cancelledAt)

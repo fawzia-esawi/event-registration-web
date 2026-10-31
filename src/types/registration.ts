@@ -36,23 +36,3 @@ export interface CreateRegistration{
     participantId:number;
     notes?:string;
 }
-export interface ResponseCreateRegistration{
-    id:number;
-    message:string;
-}
-export interface RegistrationDetails{
-    id :number;
-
-    eventId:number;
-
-    participantName:string;
-
-    status:number;
-
-    notes:string | null;
-
-    registeredAt:string;
-
-    cancelledAt:string|null;
-
-}

@@ -1,8 +1,7 @@
 import type {
     CreateRegistration,
-    RegistrationDetails,
     RegistrationResponse,
-    ResponseCreateRegistration
+    Registration
 } from "../../types/registration.ts";
 import {apiClient} from "../client.ts";
 
@@ -27,14 +26,14 @@ export const  registrationsService = {
             `/events/${eventId}/registrations?${params.toString()}`
         );
     },
-    create(eventId:number,newRegistration:CreateRegistration):Promise<ResponseCreateRegistration>{
-        return apiClient.post<ResponseCreateRegistration>(`/events/${eventId}/registrations`,newRegistration);
+    create(eventId:number,newRegistration:CreateRegistration):Promise<Registration>{
+        return apiClient.post<Registration>(`/events/${eventId}/registrations`,newRegistration);
     },
-    cancel(registrationId:number):Promise<ResponseCreateRegistration>{
-        return apiClient.patch<ResponseCreateRegistration>(`/registrations/${registrationId}/cancel`)
+    cancel(registrationId:number):Promise<Registration>{
+        return apiClient.patch<Registration>(`/registrations/${registrationId}/cancel`)
     },
 
-    getById(registrationId:number):Promise<RegistrationDetails>{
-        return apiClient.get<RegistrationDetails>(`/registrations/${registrationId}`)
+    getById(registrationId:number):Promise<Registration>{
+        return apiClient.get<Registration>(`/registrations/${registrationId}`)
     }
    };

@@ -11,7 +11,14 @@ import SelectField from "../components/ui/SelectField.tsx";
 import type {CreateRegistration} from "../types/registration.ts";
 import {registrationsService} from "../api/services/registrations.ts";
 
-
+function getUnavailableReason(event: EventDetails): string | null {
+    const now = Date.now();
+    if (!event.isActive) return "This event is inactive.";
+    if (now >= new Date(event.startAt).getTime()) return "The event has already started.";
+    if (now >= new Date(event.registrationDeadline).getTime()) return "The registration deadline has passed.";
+    if (event.availableSeats <= 0) return "The event is full.";
+    return null;
+}
 function EventDetailsPage({ eventId }: { eventId: number }) {
     const [eventDetails, setEventDetails] = useState<EventDetails>();
     const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +102,7 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
             );
             await loadEventDetails();
             setRegistrationsRefreshListKey((key) => key + 1);
-            setRegistrationMessage(result.message);
+            setRegistrationMessage(`${result.participantName} was registered successfully.`);
             closeRegisterPopup();
         } catch (error) {
             if (error instanceof ApiError) {
@@ -131,6 +138,7 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
         100,
         Math.round((eventDetails.activeRegistrationCount / eventDetails.capacity) * 100)
     );
+    const unavailableReason = getUnavailableReason(eventDetails);
     return (
         <div className="min-h-screen  p-4 flex flex-col gap-2">
             {registrationMessage && (
@@ -146,13 +154,18 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
                    <h1 className="text-[28px] font-bold text-[#4C1D95] ">
                        {eventDetails.name}
                    </h1>
+                    <div className="flex flex-col gap-2">
                     <button
                         onClick={() => setIsRegisterPopupOpen(true)}
-                        disabled={eventDetails.availableSeats === 0}
+                        disabled={unavailableReason !== null}
                         className="bg-[#4C1D95] hover:bg-[#3B1677] text-white text-sm px-4 py-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#4C1D95]"
                     >
                         Register participant
                     </button>
+                    {unavailableReason && (
+                        <p className="text-sm text-red-600">{unavailableReason}</p>
+                    )}
+                    </div>
                 </div>
                 <div className="flex flex-row gap-2.5">
                     <div className=" bg-[#DBEAFE] text-[#1E40AF] text-xs font-semibold px-2.5 py-1 rounded-full ">{eventDetails.eventStatus}</div>
