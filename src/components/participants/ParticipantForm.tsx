@@ -5,6 +5,7 @@ import type { ParticipantFormValues } from "../../types/participant.ts";
 
 interface ParticipantFormProps {
     initialValues?: ParticipantFormValues;
+    showActiveToggle?: boolean;
     submitLabel: string;
     onSubmit: (values: ParticipantFormValues) => Promise<void>;
     onCancel: () => void;
@@ -27,7 +28,8 @@ function getToday(): string {
 }
 
 function ParticipantForm({
-    initialValues = { fullName: "", email: "", phone: "", dateOfBirth: null },
+    initialValues = { fullName: "", email: "", phone: "", dateOfBirth: null, isActive: true },
+    showActiveToggle = false,
     submitLabel,
     onSubmit,
     onCancel,
@@ -36,6 +38,7 @@ function ParticipantForm({
     const [email, setEmail] = useState(initialValues.email);
     const [phone, setPhone] = useState(initialValues.phone);
     const [dateOfBirth, setDateOfBirth] = useState(initialValues.dateOfBirth ?? "");
+    const [isActive, setIsActive] = useState(initialValues.isActive);
     const [isSaving, setIsSaving] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [serverErrors, setServerErrors] = useState<string[]>([]);
@@ -51,6 +54,7 @@ function ParticipantForm({
             email: email.trim(),
             phone: phone.trim(),
             dateOfBirth: dateOfBirth === "" ? null : dateOfBirth,
+            isActive,
         };
 
         const errors: FieldErrors = {};
@@ -178,6 +182,18 @@ function ParticipantForm({
                 />
                 {fieldErrors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{fieldErrors.dateOfBirth}</p>}
             </div>
+
+            {showActiveToggle && (
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                        disabled={isSaving}
+                    />
+                    Active
+                </label>
+            )}
 
             <div className="flex justify-end gap-2">
                 <button

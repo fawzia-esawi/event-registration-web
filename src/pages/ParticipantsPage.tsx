@@ -4,7 +4,7 @@ import ParticipantForm from "../components/participants/ParticipantForm.tsx";
 import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.ts";
-import type { ParticipantFormValues } from "../types/participant.ts";
+import type { Participant, ParticipantFormValues } from "../types/participant.ts";
 
 const PAGE_SIZE = 10;
 const SUCCESS_MESSAGE_DURATION_MS = 5000;
@@ -14,6 +14,7 @@ function ParticipantsPage() {
     const [searchInput, setSearchInput] = useState("");
     const [status, setStatus] = useState("");
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [editing, setEditing] = useState<Participant | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     useEffect(() => {
@@ -64,10 +65,28 @@ function ParticipantsPage() {
         setIsCreateOpen(true);
     }
 
+    function openEdit(participant: Participant) {
+        setSuccessMessage(null);
+        setEditing(participant);
+    }
+
     async function handleCreate(values: ParticipantFormValues) {
-        const created = await participantsService.create(values);
+        const created = await participantsService.create({
+            fullName: values.fullName,
+            email: values.email,
+            phone: values.phone,
+            dateOfBirth: values.dateOfBirth,
+        });
         setIsCreateOpen(false);
         setSuccessMessage(`Participant "${created.fullName}" was added.`);
+        reload();
+    }
+
+    async function handleUpdate(values: ParticipantFormValues) {
+        if (editing === null) return;
+        const updated = await participantsService.update(editing.id, values);
+        setEditing(null);
+        setSuccessMessage(`Participant "${updated.fullName}" was updated.`);
         reload();
     }
 
@@ -165,6 +184,7 @@ function ParticipantsPage() {
                                         <th className="px-4 py-3">Email</th>
                                         <th className="px-4 py-3">Phone</th>
                                         <th className="px-4 py-3">Status</th>
+                                        <th className="px-4 py-3">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -183,6 +203,14 @@ function ParticipantsPage() {
                                                 >
                                                     {participant.isActive ? "Active" : "Inactive"}
                                                 </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <button
+                                                    onClick={() => openEdit(participant)}
+                                                    className="text-[#6D28D9] hover:underline"
+                                                >
+                                                    Edit
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -224,6 +252,24 @@ function ParticipantsPage() {
                         submitLabel="Add participant"
                         onSubmit={handleCreate}
                         onCancel={() => setIsCreateOpen(false)}
+                    />
+                </Modal>
+            )}
+
+            {editing !== null && (
+                <Modal title="Edit participant">
+                    <ParticipantForm
+                        initialValues={{
+                            fullName: editing.fullName,
+                            email: editing.email,
+                            phone: editing.phone,
+                            dateOfBirth: editing.dateOfBirth,
+                            isActive: editing.isActive,
+                        }}
+                        showActiveToggle
+                        submitLabel="Save changes"
+                        onSubmit={handleUpdate}
+                        onCancel={() => setEditing(null)}
                     />
                 </Modal>
             )}
