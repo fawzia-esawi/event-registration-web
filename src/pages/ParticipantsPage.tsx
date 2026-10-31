@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "../api/client.ts";
 import { participantsService } from "../api/services/participants.ts";
+import ParticipantDetails from "../components/participants/ParticipantDetails.tsx";
 import ParticipantForm from "../components/participants/ParticipantForm.tsx";
 import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
@@ -15,6 +16,7 @@ function ParticipantsPage() {
     const [searchInput, setSearchInput] = useState("");
     const [status, setStatus] = useState("");
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [viewingId, setViewingId] = useState<number | null>(null);
     const [editing, setEditing] = useState<Participant | null>(null);
     const [deleting, setDeleting] = useState<Participant | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -222,7 +224,14 @@ function ParticipantsPage() {
                                 <tbody>
                                     {data.items.map((participant) => (
                                         <tr key={participant.id} className="border-t">
-                                            <td className="px-4 py-3 font-medium">{participant.fullName}</td>
+                                            <td className="px-4 py-3 font-medium">
+                                                <button
+                                                    onClick={() => setViewingId(participant.id)}
+                                                    className="text-left text-[#6D28D9] hover:underline"
+                                                >
+                                                    {participant.fullName}
+                                                </button>
+                                            </td>
                                             <td className="px-4 py-3 text-gray-600">{participant.email}</td>
                                             <td className="px-4 py-3 text-gray-600">{participant.phone}</td>
                                             <td className="px-4 py-3">
@@ -238,6 +247,12 @@ function ParticipantsPage() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex gap-4">
+                                                    <button
+                                                        onClick={() => setViewingId(participant.id)}
+                                                        className="text-[#6D28D9] hover:underline"
+                                                    >
+                                                        View
+                                                    </button>
                                                     <button
                                                         onClick={() => openEdit(participant)}
                                                         className="text-[#6D28D9] hover:underline"
@@ -341,6 +356,13 @@ function ParticipantsPage() {
                         </button>
                     </div>
                 </Modal>
+            )}
+
+            {viewingId !== null && (
+                <ParticipantDetails
+                    participantId={viewingId}
+                    onClose={() => setViewingId(null)}
+                />
             )}
         </div>
     );

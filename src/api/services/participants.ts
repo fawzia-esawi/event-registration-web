@@ -30,4 +30,5 @@ export const participantsService = {
     update: (id: number, request: UpdateParticipantRequest) =>
         apiClient.put<Participant>(`/participants/${id}`, request),
     remove: (id: number) => apiClient.delete<void>(`/participants/${id}`),
+    getById: (id: number) => apiClient.get<Participant>(`/participants/${id}`),
 };
