@@ -1,14 +1,32 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { participantsService } from "../api/services/participants.ts";
+import ParticipantForm from "../components/participants/ParticipantForm.tsx";
+import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.ts";
+import type { ParticipantFormValues } from "../types/participant.ts";
 
 const PAGE_SIZE = 10;
+const SUCCESS_MESSAGE_DURATION_MS = 5000;
 
 function ParticipantsPage() {
     const [page, setPage] = useState(1);
     const [searchInput, setSearchInput] = useState("");
     const [status, setStatus] = useState("");
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (successMessage === null) {
+            return undefined;
+        }
+
+        const timer = window.setTimeout(() => {
+            setSuccessMessage(null);
+        }, SUCCESS_MESSAGE_DURATION_MS);
+
+        return () => window.clearTimeout(timer);
+    }, [successMessage]);
 
     const search = useDebouncedValue(searchInput.trim(), 400);
 
@@ -41,9 +59,33 @@ function ParticipantsPage() {
         setPage(1);
     }
 
+    function openCreate() {
+        setSuccessMessage(null);
+        setIsCreateOpen(true);
+    }
+
+    async function handleCreate(values: ParticipantFormValues) {
+        const created = await participantsService.create(values);
+        setIsCreateOpen(false);
+        setSuccessMessage(`Participant "${created.fullName}" was added.`);
+        reload();
+    }
+
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900">Participants</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-900">Participants</h1>
+                <button
+                    onClick={openCreate}
+                    className="rounded-lg bg-[#6D28D9] px-4 py-2 text-white hover:bg-[#4C1D95]"
+                >
+                    Add participant
+                </button>
+            </div>
+
+            {successMessage && (
+                <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{successMessage}</div>
+            )}
 
             <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg bg-white p-4 shadow">
                 <div className="min-w-[220px] flex-1">
@@ -175,6 +217,16 @@ function ParticipantsPage() {
                     </>
                 )}
             </div>
+
+            {isCreateOpen && (
+                <Modal title="Add participant">
+                    <ParticipantForm
+                        submitLabel="Add participant"
+                        onSubmit={handleCreate}
+                        onCancel={() => setIsCreateOpen(false)}
+                    />
+                </Modal>
+            )}
         </div>
     );
 }
