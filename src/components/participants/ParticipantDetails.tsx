@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { participantsService } from "../../api/services/participants.ts";
+import { participantsService } from "../../api/index.ts";
 import { useApi } from "../../hooks/useApi.ts";
 import Modal from "../ui/Modal.tsx";
 

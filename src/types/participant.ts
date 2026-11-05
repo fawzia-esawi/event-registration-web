@@ -9,13 +9,7 @@ export interface Participant {
     updatedAt: string | null;
 }
 
-export interface ParticipantsResponse {
-    items: Participant[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-}
+export type ParticipantStatusFilter = "" | "true" | "false";
 
 export interface ParticipantFilters {
     search?: string;

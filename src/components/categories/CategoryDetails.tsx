@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { categoriesService } from "../../api/services/categories.ts";
+import { categoriesService } from "../../api/index.ts";
 import { useApi } from "../../hooks/useApi.ts";
 import Modal from "../ui/Modal.tsx";
 
