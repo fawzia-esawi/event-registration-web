@@ -1,8 +1,8 @@
-import EventList from "../components/layout/EventList.tsx";
+import EventList from "../components/events/EventList.tsx";
 import InputField from "../components/ui/InputField";
 import SelectField from "../components/ui/SelectField";
 import {useCallback,useState,useEffect} from "react";
-import CreateEvent from "../components/layout/CreateEvent";
+import CreateEvent from "../components/events/CreateEvent.tsx";
 import {categoriesService} from "../api/services/categories.ts";
 import {useApi} from "../hooks/useApi.ts";
 
@@ -205,7 +205,7 @@ function Events() {
                                setSuccessMessage("");
                            }, 2500);
                        }}
-                       categories={activeCategories}
+                       categories={categories}
                        onEventDeleted={(message) => {
                            setRefreshKey((previous) => previous + 1);
                            setDeleteMessage(message);

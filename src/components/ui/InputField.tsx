@@ -9,6 +9,7 @@ function InputField({ label, className = "", ...props }: InputFieldProps) {
         <div className={className}>
             <label htmlFor={props.id} className="mb-2 block text-sm font-medium text-gray-700">
                 {label}
+                {props.required && <span className="ml-1 text-red-600">*</span>}
             </label>
 
             <input

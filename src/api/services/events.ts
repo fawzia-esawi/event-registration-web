@@ -3,10 +3,9 @@ import {
     type CreateEventPayload,
     type EventsResponse,
     type EventFormData,
-    type CreateEventResponse,
-    type EventDetails,
+    type EventDetails, type Event,
 } from "../../types/event.ts";
-import {toIsoDate} from "../../utils/formatters.ts";
+import {toIsoDate, toUtcEndOfDay, toUtcStartOfDay} from "../../utils/formatters.ts";
 
 export type EventFilters = {
     search?: string;
@@ -43,11 +42,11 @@ export const eventsService = {
         }
 
         if (filters.fromDate) {
-            params.set("fromDate", filters.fromDate);
+            params.set("fromDate", toUtcStartOfDay(filters.fromDate));
         }
 
         if (filters.toDate) {
-            params.set("toDate", filters.toDate);
+            params.set("toDate", toUtcEndOfDay(filters.toDate));
         }
 
         return apiClient.get<EventsResponse>(
@@ -59,7 +58,7 @@ export const eventsService = {
         return apiClient.get<EventDetails>(`/events/${id}`);
     },
 
-    create(newEvent: EventFormData): Promise<CreateEventResponse> {
+    create(newEvent: EventFormData): Promise<Event> {
         const payload: CreateEventPayload = {
             name: newEvent.name.trim(),
             categoryId: Number(newEvent.categoryId),
@@ -74,7 +73,7 @@ export const eventsService = {
             isActive: newEvent.isActive === "true",
         };
 
-        return apiClient.post<CreateEventResponse>(
+        return apiClient.post<Event>(
             "/events",
             payload,
         );
@@ -83,8 +82,8 @@ export const eventsService = {
     update(
         id: number,
         payload: CreateEventPayload,
-    ): Promise<void> {
-        return apiClient.put<void>(`/events/${id}`, payload);
+    ): Promise<Event> {
+        return apiClient.put<Event>(`/events/${id}`, payload);
     },
 
     remove(id: number): Promise<void> {

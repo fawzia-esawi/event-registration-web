@@ -17,3 +17,11 @@ export function toDateTimeLocal(value: string): string {
         .toISOString()
         .slice(0, 16);
 }
+
+export function toUtcStartOfDay(value: string): string {
+    return new Date(`${value}T00:00:00.000Z`).toISOString();
+}
+
+export function toUtcEndOfDay(value: string): string {
+    return new Date(`${value}T23:59:59.999Z`).toISOString();
+}
