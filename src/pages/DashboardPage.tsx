@@ -172,7 +172,9 @@ function DashboardPage() {
                                             key={event.eventId}
                                             className="grid grid-cols-7 gap-4 border-b border-white/10 p-3 text-sm text-violet-50"
                                         >
-                                            <div>{event.eventName}</div>
+                                            <button
+                                            onClick={()=>{navigate(`events/${event.eventId}`)}}
+                                            className="cursor-pointer hover:text-blue-600 hover:underline transition-colors">{event.eventName}</button>
                                             <div>{event.categoryName}</div>
                                             <div>{new Date(event.startAt).toLocaleString()}</div>
                                             <div>{event.location}</div>

@@ -7,7 +7,7 @@ import InputField from "../ui/InputField.tsx";
 import SelectField from "../ui/SelectField.tsx";
 import {formatDateTime} from "../../utils/formatters.ts";
 
-function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { eventId: number ,refreshKey: number,onRegistrationChanged: () => Promise<void>;}){
+function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged , unavailableReason }: { eventId: number ,refreshKey: number,onRegistrationChanged: () => Promise<void>,unavailableReason: string | null;}){
     const [page, setPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -123,6 +123,7 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchInput.trim());
+            setPage(1);
         }, 1000);
 
         return () => clearTimeout(timer);
@@ -275,8 +276,11 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
                     id="statusFilter"
                     className="min-w-[140px] flex-1"
                     value={statusFilter ?? ""}
-                    onChange={(e) =>
-                        setStatusFilter(e.target.value === "" ? undefined  : Number(e.target.value))}
+                    onChange={(e) =>{
+                        setStatusFilter(e.target.value === "" ? undefined  : Number(e.target.value));
+                        setPage(1);
+                    }}
+
                 >
                     <option  value="" >
                         Select Status
@@ -361,13 +365,17 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
                                             view
                                         </button>
 
+
                                         <button
                                             type="button"
-                                            disabled={isProcessing === registration.id}
-                                            className={`rounded-md p-2 ${
+                                            disabled={
+                                                isProcessing === registration.id ||
+                                                (registration.statusName !== "Active" && unavailableReason !== null)
+                                            }
+                                            className={`rounded-md p-2  ${
                                                 registration.statusName === "Active"
                                                     ? "text-red-600 hover:bg-red-100"
-                                                    : "text-green-600 hover:bg-green-100"
+                                                    : "text-green-600 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                             }`}
                                             onClick={() => {
                                                 if (registration.statusName === "Active") {
@@ -376,7 +384,7 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
                                                     handleActivate(registration);
                                                 }
                                             }}
-                                            title={registration.statusName === "Active" ? "Cancel Registration" : "Activate Registration"}
+                                            title={registration.statusName === "Active" ? "Cancel Registration" :  unavailableReason ?? "Activate Registration"}
                                         >
                                             {isProcessing === registration.id
                                                 ? "Please wait..."
@@ -384,6 +392,7 @@ function RegistrationsList({ eventId , refreshKey ,onRegistrationChanged }: { ev
                                                     ? "Cancel"
                                                     : "Activate"}
                                         </button>
+
                                     </div>
                                 </div>
                             </div>

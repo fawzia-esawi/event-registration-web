@@ -15,6 +15,7 @@ function SelectField({
         <div className={className}>
             <label className="mb-2 block text-sm font-medium text-gray-700" htmlFor={props.id}>
                 {label}
+                {props.required && <span className="ml-1 text-red-600">*</span>}
             </label>
 
             <select
