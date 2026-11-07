@@ -3,7 +3,7 @@ import { useState } from "react";
 import InputField from "../ui/InputField.tsx";
 import SelectField from "../ui/SelectField.tsx";
 import type { EventFormData } from "../../types/event.ts";
-import {ApiError} from "../../api/client.ts";
+import {ApiError} from "../../api/index.ts";
 import type {Category} from "../../types/category.ts";
 
 type EventFormProps = {

@@ -1,10 +1,11 @@
 import HorizontalLine from "../ui/HorizontalLine.tsx";
 import {useEffect, useState} from "react";
-import { type EventFilters, eventsService} from "../../api/services/events.ts";
+import { type EventFilters} from "../../api/services/events.ts";
+import {  eventsService} from  "../../api/index.ts";
 import type { Event } from "../../types/event.ts";
 import { Pencil, Trash2 } from "lucide-react";
 import EditEvent from "./EditEvent.tsx";
-import {ApiError} from "../../api/client.ts";
+import {ApiError} from "../../api/index.ts";
 import {navigate} from "../../utils/navigation.ts";
 import type {Category} from "../../types/category.ts";
 

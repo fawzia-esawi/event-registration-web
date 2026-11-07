@@ -1,6 +1,6 @@
 
 import EventForm from "./EventForm.tsx";
-import {eventsService} from "../../api/services/events.ts";
+import {eventsService} from "../../api/index.ts";
 import type {
     EventFormData,
 } from "../../types/event.ts";

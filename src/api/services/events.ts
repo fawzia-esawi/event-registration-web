@@ -1,11 +1,11 @@
-import { apiClient } from "../client.ts";
+import { apiClient } from "../index.ts";
 import {
     type CreateEventPayload,
-    type EventsResponse,
     type EventFormData,
     type EventDetails, type Event,
 } from "../../types/event.ts";
 import {toIsoDate, toUtcEndOfDay, toUtcStartOfDay} from "../../utils/formatters.ts";
+import type {PagedResult} from "../../types/common.ts";
 
 export type EventFilters = {
     search?: string;
@@ -20,7 +20,7 @@ export const eventsService = {
         page = 1,
         pageSize = 10,
         filters: EventFilters = {},
-    ): Promise<EventsResponse> {
+    ): Promise<PagedResult<Event>> {
         const params = new URLSearchParams({
             page: String(page),
             pageSize: String(pageSize),
@@ -49,7 +49,7 @@ export const eventsService = {
             params.set("toDate", toUtcEndOfDay(filters.toDate));
         }
 
-        return apiClient.get<EventsResponse>(
+        return apiClient.get<PagedResult<Event>>(
             `/events?${params.toString()}`,
         );
     },

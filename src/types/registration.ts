@@ -24,13 +24,7 @@ export interface Registration{
 
  cancelledAt:string|null;
 }
-export interface RegistrationResponse {
-    items: Registration[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-}
+
 
 export interface CreateRegistration{
     participantId:number;
