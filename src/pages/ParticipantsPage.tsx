@@ -5,8 +5,11 @@ import ParticipantForm from "../components/participants/ParticipantForm.tsx";
 import Modal from "../components/ui/Modal.tsx";
 import { useApi } from "../hooks/useApi.ts";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.ts";
-import type { Participant, ParticipantFormValues, ParticipantStatusFilter,
- } from "../types/participant.ts";
+import type {
+    Participant,
+    ParticipantFormValues,
+    ParticipantStatusFilter,
+} from "../types/participant.ts";
 
 const PAGE_SIZE = 10;
 const SUCCESS_MESSAGE_DURATION_MS = 5000;
@@ -19,7 +22,8 @@ function isStatusFilter(value: string): value is ParticipantStatusFilter {
 function ParticipantsPage() {
     const [page, setPage] = useState(1);
     const [searchInput, setSearchInput] = useState("");
-    const [status, setStatus] = useState<ParticipantStatusFilter>("");    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [status, setStatus] = useState<ParticipantStatusFilter>("");
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [viewingId, setViewingId] = useState<number | null>(null);
     const [editing, setEditing] = useState<Participant | null>(null);
     const [deleting, setDeleting] = useState<Participant | null>(null);
@@ -40,7 +44,6 @@ function ParticipantsPage() {
     }, [successMessage]);
 
     const search = useDebouncedValue(searchInput.trim(), 400);
-  
 
     const fetchParticipants = useCallback(
         () =>
@@ -56,16 +59,16 @@ function ParticipantsPage() {
     const hasFilters = searchInput.trim() !== "" || status !== "";
 
     function handleSearchChange(value: string) {
-    setSearchInput(value);
-    setPage(1);
-}
+        setSearchInput(value);
+        setPage(1);
+    }
 
     function handleStatusChange(value: string) {
-    if (!isStatusFilter(value)) return;
-    setStatus(value);
-    setPage(1);
-}
-    
+        if (!isStatusFilter(value)) return;
+        setStatus(value);
+        setPage(1);
+    }
+
     function clearFilters() {
         setSearchInput("");
         setStatus("");
