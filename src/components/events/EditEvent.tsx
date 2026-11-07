@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import EventForm from "./EventForm.tsx";
-import {eventsService} from "../../api/services/events.ts";
+import {eventsService} from "../../api/index.ts";
 import {type CreateEventPayload, type EventDetails, type EventFormData} from "../../types/event.ts";
-import {ApiError} from "../../api/client.ts";
+import {ApiError} from "../../api/index.ts";
 import { toIsoDate,toDateTimeLocal } from "../../utils/formatters.ts";
 import type {Category} from "../../types/category.ts";
 

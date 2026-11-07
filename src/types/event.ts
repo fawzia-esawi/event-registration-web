@@ -14,13 +14,7 @@ export interface Event {
     isActive: boolean;
 }
 
-export interface EventsResponse {
-    items: Event[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-}
+
 export interface CreateEventPayload {
     name: string;
     categoryId: number;

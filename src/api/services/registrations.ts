@@ -1,13 +1,13 @@
 import type {
     CreateRegistration,
-    RegistrationResponse,
     Registration
 } from "../../types/registration.ts";
-import {apiClient} from "../client.ts";
+import {apiClient} from "../index.ts";
+import type {PagedResult} from "../../types/common.ts";
 
 export const  registrationsService = {
 
-    getAll(eventId: number,page=1,pageSize=10,search?:string,status?:number):Promise<RegistrationResponse>{
+    getAll(eventId: number,page=1,pageSize=10,search?:string,status?:number):Promise<PagedResult<Registration>>{
 
         const params = new URLSearchParams({
             page: String(page),
@@ -22,7 +22,7 @@ export const  registrationsService = {
             params.set("status", String(status));
         }
 
-        return apiClient.get<RegistrationResponse>(
+        return apiClient.get<PagedResult<Registration>>(
             `/events/${eventId}/registrations?${params.toString()}`
         );
     },

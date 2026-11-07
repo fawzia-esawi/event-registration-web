@@ -1,8 +1,7 @@
 import HorizontalLine from "../ui/HorizontalLine.tsx";
 import {useCallback,useEffect,useState} from "react";
-import {registrationsService} from "../../api/services/registrations.ts";
 import type {Registration} from "../../types/registration.ts";
-import {ApiError} from "../../api/client.ts";
+import {ApiError ,registrationsService } from "../../api/index.ts";
 import InputField from "../ui/InputField.tsx";
 import SelectField from "../ui/SelectField.tsx";
 import {formatDateTime} from "../../utils/formatters.ts";

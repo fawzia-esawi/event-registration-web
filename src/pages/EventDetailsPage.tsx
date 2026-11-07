@@ -1,17 +1,14 @@
 import {useCallback,useEffect, useState} from "react";
-import {eventsService} from "../api/services/events.ts";
 import type {EventDetails} from "../types/event.ts";
 import HorizontalLine from "../components/ui/HorizontalLine.tsx";
 import InfoEvent from "../components/ui/InfoEvent.tsx";
 import {formatDateTime} from "../utils/formatters.ts";
 import StatusEventCard from "../components/ui/StatusEventCard.tsx";
-import {ApiError} from "../api/client.ts";
+import {ApiError ,eventsService ,registrationsService ,participantsService } from "../api/index.ts";
 import RegistrationsList from "../components/registrations/RegistrationsList.tsx";
 import SelectField from "../components/ui/SelectField.tsx";
 import type {CreateRegistration} from "../types/registration.ts";
-import {registrationsService} from "../api/services/registrations.ts";
 import type {Participant} from "../types/participant.ts";
-import {participantsService} from "../api/services/participants.ts";
 
 function getUnavailableReason(event: EventDetails): string | null {
     const now = Date.now();
