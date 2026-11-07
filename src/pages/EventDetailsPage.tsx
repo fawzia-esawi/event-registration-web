@@ -6,7 +6,7 @@ import InfoEvent from "../components/ui/InfoEvent.tsx";
 import {formatDateTime} from "../utils/formatters.ts";
 import StatusEventCard from "../components/ui/StatusEventCard.tsx";
 import {ApiError} from "../api/client.ts";
-import RegistrationsList from "../components/layout/RegistrationsList.tsx";
+import RegistrationsList from "../components/registrations/RegistrationsList.tsx";
 import SelectField from "../components/ui/SelectField.tsx";
 import type {CreateRegistration} from "../types/registration.ts";
 import {registrationsService} from "../api/services/registrations.ts";
@@ -35,6 +35,8 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
     const [participantsError, setParticipantsError] = useState("");
+    const [participantValidationError, setParticipantValidationError] = useState("");
+
 
     const loadEventDetails = useCallback(async () => {
         setError("");
@@ -110,9 +112,11 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
         e.preventDefault();
 
         if (participantId === "") {
-            setRegistrationError("Please select a participant.");
+            setParticipantValidationError("Please select a participant.");
             return;
         }
+
+        setParticipantValidationError("");
 
         setIsSubmitting(true);
         setRegistrationError("");
@@ -243,6 +247,7 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
 
                         <form
                             onSubmit={handleRegister}
+                            noValidate
                             className="flex flex-col gap-4"
                         >
                             <SelectField
@@ -253,6 +258,7 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
                                 onChange={(e) => {
                                     const value = e.target.value;
                                     setParticipantId(value === "" ? "" : Number(value));
+                                    setParticipantValidationError("");
                                 }}
                             >
                                 <option value="" disabled>
@@ -267,6 +273,11 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
                                     </option>
                                 ))}
                             </SelectField>
+                            {participantValidationError && (
+                                <p className="text-sm text-red-600">
+                                    {participantValidationError}
+                                </p>
+                            )}
                             {participantsError && (
                                 <p className="text-sm text-red-600">
                                     {participantsError}
@@ -340,7 +351,9 @@ function EventDetailsPage({ eventId }: { eventId: number }) {
                 <RegistrationsList
                     eventId={eventId}
                     refreshKey={registrationsRefreshListKey}
-                    onRegistrationChanged={handleRegistrationChanged}>
+                    onRegistrationChanged={handleRegistrationChanged}
+                    unavailableReason={unavailableReason}
+                >
                 </RegistrationsList>
             </div>
         </div>

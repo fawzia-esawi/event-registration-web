@@ -30,19 +30,17 @@ const emptyForm: EventFormData = {
 function EventForm({title, submitLabel, initialData, onClose, onSubmit,categories}: EventFormProps) {
     const [formData, setFormData] = useState<EventFormData>(() => initialData ?? { ...emptyForm });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState<{ endAt?: string; registrationDeadline?: string; }>({});//Stores validation errors for the End At and Registration Deadline fields
+    const [errors, setErrors] = useState<Partial<Record<keyof EventFormData, string>>>({});//Stores validation errors for the End At and Registration Deadline fields
     const [submitError, setSubmitError] = useState("");//Stores the error message returned when submitting the form fails
     function updateField(name: keyof EventFormData, value: string) {
         setFormData((previous) =>
-            ({...previous, [name]: value,})
-        );
+            ({...previous, [name]: value,}));
 
-        if (name === "endAt" || name === "registrationDeadline") {
-            setErrors((previous) => ({
-                ...previous,
-                [name]: undefined,
-            }));
-        }
+        setErrors((previous) => ({
+            ...previous,
+            [name]: undefined,
+        }));
+
 
         setSubmitError("");
     }
@@ -50,27 +48,63 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        const startAt = new Date(formData.startAt);
-        const endAt = new Date(formData.endAt);
-        const deadline = new Date(formData.registrationDeadline);
-
         const validationErrors: typeof errors = {};
 
-        if (endAt <= startAt) {
-            validationErrors.endAt =
-                "End date must be after start date.";
+        if (!formData.name.trim()) {
+            validationErrors.name = "Event name is required.";
         }
 
-        if (deadline > startAt) {
-            validationErrors.registrationDeadline =
-                "Registration deadline must be before or equal to start date.";
+        if (!formData.categoryId) {
+            validationErrors.categoryId = "Please select a category.";
+        }
+
+        if (!formData.location.trim()) {
+            validationErrors.location = "Location is required.";
+        }
+
+        const capacity = Number(formData.capacity);
+
+        if (!formData.capacity || !Number.isInteger(capacity) || capacity < 1 || capacity > 10000) {
+            validationErrors.capacity = "Capacity must be an integer between 1 and 10000.";
+        }
+
+        if (!formData.startAt) {
+            validationErrors.startAt = "Start date is required.";
+        }
+
+        if (!formData.endAt) {
+            validationErrors.endAt = "End date is required.";
+        }
+
+        if (!formData.registrationDeadline) {
+            validationErrors.registrationDeadline = "Registration deadline is required.";
+        }
+
+        if (!formData.isActive) {
+            validationErrors.isActive = "Please select event status.";
+        }
+
+        if (formData.startAt && formData.endAt) {
+            const startAt = new Date(formData.startAt);
+            const endAt = new Date(formData.endAt);
+
+            if (endAt <= startAt) {
+                validationErrors.endAt = "End date must be after start date.";
+            }
+        }
+
+        if (formData.startAt && formData.registrationDeadline) {
+            const startAt = new Date(formData.startAt);
+            const deadline = new Date(formData.registrationDeadline);
+
+            if (deadline > startAt) {
+                validationErrors.registrationDeadline =
+                    "Registration deadline must be before or equal to start date.";
+            }
         }
 
         setErrors(validationErrors);
-
-        if (Object.keys(validationErrors).length > 0) {
-            return;
-        }
+        if (Object.keys(validationErrors).length > 0) return;
 
         try {
             setIsSubmitting(true);
@@ -88,7 +122,7 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
             <div className="w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl">
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-medium text-[#4C1D95]">
@@ -104,11 +138,12 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
 
                     <div className="flex flex-col gap-4 text-gray-600">
-                        <div className="flex flex-row justify-around gap-4">
-                            <InputField
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="min-w-0 flex-1">
+                                <InputField
                                 label="Event Name"
                                 type="text"
                                 placeholder="Enter event name"
@@ -120,9 +155,14 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 onChange={(e) =>
                                     updateField("name", e.target.value)
                                 }
-                            />
+                                />
+                                {errors.name && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                                )}
+                            </div>
 
-                            <SelectField
+                            <div className="min-w-0 flex-1" >
+                                <SelectField
                                 label="Category"
                                 id="category"
                                 className="min-w-0 flex-1"
@@ -131,14 +171,19 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 onChange={(e) =>
                                     updateField("categoryId", e.target.value)
                                 }
-                            >
+                                >
                                 <option value="">Select a category</option>
                                 {categories.map((category) => (
                                     <option key={category.id} value={category.id}>
                                         {category.name}
                                     </option>
                                 ))}
-                            </SelectField>
+                                </SelectField>
+                                {errors.categoryId && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.categoryId}</p>
+                                )}
+                            </div>
+
                         </div>
 
                         <InputField
@@ -154,8 +199,9 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                             }
                         />
 
-                        <div className="flex flex-row justify-around gap-4">
-                            <InputField
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="min-w-0 flex-1">
+                                <InputField
                                 label="Location"
                                 id="eventLocation"
                                 placeholder="Enter event location"
@@ -166,10 +212,14 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 value={formData.location}
                                 onChange={(e) =>
                                     updateField("location", e.target.value)
-                                }
-                            />
+                                }/>
 
-                            <InputField
+                                {errors.location && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                                )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <InputField
                                 label="Capacity"
                                 placeholder="e.g. 50"
                                 id="capacity"
@@ -182,12 +232,16 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 value={formData.capacity}
                                 onChange={(e) =>
                                     updateField("capacity", e.target.value)
-                                }
-                            />
+                                }/>
+                                {errors.capacity && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.capacity}</p>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="flex flex-row justify-around gap-4">
-                            <InputField
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="min-w-0 flex-1">
+                                <InputField
                                 label="Start At"
                                 id="startAt"
                                 type="datetime-local"
@@ -196,10 +250,13 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 value={formData.startAt}
                                 onChange={(e) =>
                                     updateField("startAt", e.target.value)
-                                }
-                            />
+                                }/>
+                                {errors.startAt && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.startAt}</p>
+                                )}
+                            </div>
                             <div className="min-w-0 flex-1">
-                            <InputField
+                                <InputField
                                 label="End At"
                                 id="endAt"
                                 type="datetime-local"
@@ -208,17 +265,15 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 value={formData.endAt}
                                 onChange={(e) =>
                                     updateField("endAt", e.target.value)
-                                }
-                            />
-                            {errors.endAt && (
-                                <p className="mt-1 text-sm text-red-600">
-                                    {errors.endAt}
-                                </p>
-                            )}
+                                }/>
+
+                                {errors.endAt && (
+                                <p className="mt-1 text-sm text-red-600">{errors.endAt}</p>
+                                )}
                             </div>
                         </div>
 
-                        <div className="flex flex-row justify-around gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="min-w-0 flex-1">
                             <InputField
                                 label="Registration Deadline"
@@ -235,12 +290,10 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 }
                             />
                             {errors.registrationDeadline && (
-                                <p className="mt-1 text-sm text-red-600">
-                                    {errors.registrationDeadline}
-                                </p>
-                            )}
+                                <p className="mt-1 text-sm text-red-600">{errors.registrationDeadline}</p>)}
                             </div>
-                            <SelectField
+                            <div className="min-w-0 flex-1">
+                                <SelectField
                                 label="Is Active"
                                 id="isActive"
                                 className="min-w-0 flex-1"
@@ -249,11 +302,15 @@ function EventForm({title, submitLabel, initialData, onClose, onSubmit,categorie
                                 onChange={(e) =>
                                     updateField("isActive", e.target.value)
                                 }
-                            >
+                                >
                                 <option value="">Select Activity</option>
                                 <option value="true">Active</option>
                                 <option value="false">Inactive</option>
-                            </SelectField>
+                                </SelectField>
+                                {errors.isActive && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.isActive}</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                     {submitError && (

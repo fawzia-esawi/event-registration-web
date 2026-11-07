@@ -44,10 +44,7 @@ export  interface EventFormData {
     registrationDeadline: string;
     isActive: string | "";
 }
-export interface CreateEventResponse  {
-    id: number;
-    message: string;
-}
+
 
 export interface EventDetails {
     id: number;

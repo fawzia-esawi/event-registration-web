@@ -1,7 +1,7 @@
 import HorizontalLine from "../ui/HorizontalLine.tsx";
 import {useEffect, useState} from "react";
 import { type EventFilters, eventsService} from "../../api/services/events.ts";
-import type { Event } from "../../types/event";
+import type { Event } from "../../types/event.ts";
 import { Pencil, Trash2 } from "lucide-react";
 import EditEvent from "./EditEvent.tsx";
 import {ApiError} from "../../api/client.ts";
