@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
-import { ApiError } from "../api/client.ts";
-import { categoriesService } from "../api/services/categories.ts";
+import { ApiError, categoriesService } from "../api/index.ts";
 import CategoryDetails from "../components/categories/CategoryDetails.tsx";
 import CategoryForm from "../components/categories/CategoryForm.tsx";
 import Modal from "../components/ui/Modal.tsx";

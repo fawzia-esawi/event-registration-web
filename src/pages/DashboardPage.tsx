@@ -1,5 +1,5 @@
 import { ArrowUpRight, CalendarDays, ClipboardCheck, Folder, RefreshCw, Sparkles, Users } from "lucide-react";
-import { dashboardService } from "../api/services/dashboard.ts";
+import { dashboardService } from "../api/index.ts";
 import "../components/dashboard/dashboard.css";
 import StatCard from "../components/dashboard/StatCard.tsx";
 import { useApi } from "../hooks/useApi.ts";

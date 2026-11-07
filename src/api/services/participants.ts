@@ -1,9 +1,9 @@
 import { apiClient } from "../client.ts";
+import type { PagedResult } from "../../types/common.ts";
 import type {
     CreateParticipantRequest,
     Participant,
     ParticipantFilters,
-    ParticipantsResponse,
     UpdateParticipantRequest,
 } from "../../types/participant.ts";
 
@@ -21,14 +21,16 @@ export const participantsService = {
             params.set("isActive", String(filters.isActive));
         }
 
-        return apiClient.get<ParticipantsResponse>(`/participants?${params.toString()}`);
+        return apiClient.get<PagedResult<Participant>>(`/participants?${params.toString()}`);
     },
+
+    getById: (id: number) => apiClient.get<Participant>(`/participants/${id}`),
 
     create: (request: CreateParticipantRequest) =>
         apiClient.post<Participant>("/participants", request),
 
     update: (id: number, request: UpdateParticipantRequest) =>
         apiClient.put<Participant>(`/participants/${id}`, request),
+
     remove: (id: number) => apiClient.delete<void>(`/participants/${id}`),
-    getById: (id: number) => apiClient.get<Participant>(`/participants/${id}`),
 };

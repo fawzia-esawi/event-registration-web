@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SyntheticEvent } from "react";
-import { ApiError } from "../../api/client.ts";
+import { ApiError } from "../../api/index.ts";
 import type { ParticipantFormValues } from "../../types/participant.ts";
 
 interface ParticipantFormProps {
